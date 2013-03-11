@@ -34,4 +34,4 @@ A: Has your server's clock gone backwards massively recently? (probably due to i
    being incorrect). If so, you have two options. You can either wait for the real
    time to be what the incorrect time was, or you can restart the affected server.
    If that does not fix the problem, please file a bug at:
-       http://jira.atheme.org/browse/SHAD
+       https://github.com/shadowircd/shadowircd/issues
