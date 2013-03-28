@@ -599,7 +599,7 @@ del_invite(struct Channel *chptr, struct Client *who)
 	rb_dlinkFindDestroy(chptr, &who->user->invited);
 }
 
-/* is_on_list()
+/* is_banned_list()
  *
  * input	- channel to check bans for, user to check bans against
  *                optional prebuilt buffers
@@ -610,7 +610,7 @@ del_invite(struct Channel *chptr, struct Client *who)
  *  - Niichan
  */
 int
-is_on_list(struct Channel *chptr, rb_dlink_list *list, struct Client *who, struct membership *msptr,
+is_banned_list(struct Channel *chptr, rb_dlink_list *list, struct Client *who, struct membership *msptr,
 	  const char *s, const char *s2)
 {
 	char src_host[NICKLEN + USERLEN + HOSTLEN + 6];
@@ -719,7 +719,7 @@ int
 is_banned(struct Channel *chptr, struct Client *who, struct membership *msptr,
 	   const char *s, const char *s2)
 {
-	return is_on_list(chptr, &chptr->banlist, who, msptr, s, s2, NULL);
+	return is_banned_list(chptr, &chptr->banlist, who, msptr, s, s2, NULL);
 }
 
 
@@ -734,7 +734,7 @@ int
 is_quieted(struct Channel *chptr, struct Client *who, struct membership *msptr,
 	   const char *s, const char *s2)
 {
-	return is_on_list(chptr, &chptr->quietlist, who, msptr, s, s2, NULL);
+	return is_banned_list(chptr, &chptr->quietlist, who, msptr, s, s2, NULL);
 }
 
 /* can_join()
