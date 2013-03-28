@@ -71,6 +71,7 @@ SRCS =                          \
   hook.c                        \
   hostmask.c			\
   irc_dictionary.c		\
+  ipv4_from_ipv6.c		\
   ircd.c                        \
   ircd_signal.c                 \
   listener.c                    \

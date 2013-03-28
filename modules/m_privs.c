@@ -40,6 +40,7 @@
 #include "s_conf.h"
 #include "s_newconf.h"
 
+static void show_privs(struct Client *source_p, struct Client *target_p);
 static int m_privs(struct Client *client_p, struct Client *source_p, int parc, const char *parv[]);
 static int me_privs(struct Client *client_p, struct Client *source_p, int parc, const char *parv[]);
 static int mo_privs(struct Client *client_p, struct Client *source_p, int parc, const char *parv[]);
