@@ -69,7 +69,8 @@ config
   sends data. This depends on kernel support. It may break BOPM checking.
 - Add general::resv_fnc to forcibly change nicks of local users that match a
   newly set nick RESV, default enabled.
-- Add extb_usermode extension, $m:+-<modes> extban matching against umodes.
+* Add extb_usermode extension, $m:+-<modes> extban matching against umodes.
+  DONE 2013-03-27
 - Extend extb_oper extension to allow matching against oper privileges.
 misc
 - Work around timerfd/signalfd brokenness on OpenVZ.
