@@ -26,10 +26,11 @@ user
 - Channel mode +c (and other places that disallow colour codes) now also strip
   ASCII 4 (a different kind of colour code).
 - Add an error message (numeric 743) if a ban mask is invalid.
-- Extract the underlying IPv4 address from 6to4 and Teredo IPv6 addresses.
+* Extract the underlying IPv4 address from 6to4 and Teredo IPv6 addresses.
   Show it in a remote /whois and check channel bans, quiets, D:lines and
   K:lines against it. Note that ban exceptions and auth{} blocks are not
-  checked.
+  checked. DONE 2013-03-27 by Niichan.
+  charybdis commit referenced: 524a5b3ac73ab161a243efc9361abdf4da201e9d
 - Send ERR_TOOMANYCHANNELS for each channel join that fails due to channel
   limits, instead of one per JOIN command.
 - Add account-notify client capability to notify clients about logins and
