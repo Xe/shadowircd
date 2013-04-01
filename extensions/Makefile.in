@@ -57,6 +57,7 @@ SRCS =                          \
   sno_globalkline.c		\
   sno_globaloper.c		\
   sno_whois.c			\
+  restrict-unauthenticated.c    \
   m_42.c			\
   m_adminwall.c			\
   m_cycle.c			\
