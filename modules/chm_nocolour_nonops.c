@@ -40,21 +40,25 @@
 static char buf[BUFSIZE];
 static unsigned int mode_nocolour;
 
-static void chm_nocolour_process(hook_data_privmsg_channel *);
+static void chm_nocolour_nonops_process(hook_data_privmsg_channel *);
 
-mapi_hfn_list_av1 chm_nocolour_hfnlist[] = {
-	{ "privmsg_channel", (hookfn) chm_nocolour_process },
+mapi_hfn_list_av1 chm_nocolour_nonops_hfnlist[] = {
+	{ "privmsg_channel", (hookfn) chm_nocolour_nonops_process },
 	{ NULL, NULL }
 };
 
 static void
-chm_nocolour_process(hook_data_privmsg_channel *data)
+chm_nocolour_nonops_process(hook_data_privmsg_channel *data)
 {
 	/* don't waste CPU if message is already blocked */
 	if (data->approved)
 		return;
+	
+	struct membership *msptr;
+	
+	msptr = find_channel_membership(data->chptr, data->source_p);
 
-	if (data->chptr->mode.mode & mode_nocolour)
+	if (data->chptr->mode.mode & mode_nocolour && is_any_op(msptr))
 	{
 		rb_strlcpy(buf, data->text, sizeof buf);
 		strip_colour(buf);
@@ -76,7 +80,7 @@ _modinit(void)
 static void
 _moddeinit(void)
 {
-	cflag_orphan('c');
+	cflag_orphan('y');
 }
 
-DECLARE_MODULE_AV1(chm_nocolour, _modinit, _moddeinit, NULL, NULL, chm_nocolour_hfnlist, "$Revision$");
+DECLARE_MODULE_AV1(chm_nocolour_nonops, _modinit, _moddeinit, NULL, NULL, chm_nocolour_nonops_hfnlist, "$Revision$");
