@@ -332,8 +332,10 @@ build_target_list(int p_or_n, const char *command, struct Client *client_p,
 		{
 			if(*nick == '@')
 				type |= CHFL_CHANOP;
+			else if(*nick == '%')
+				type |= CHFL_CHANOP | CHFL_HALFOP;
 			else if(*nick == '+')
-				type |= CHFL_CHANOP | CHFL_VOICE;
+				type |= CHFL_CHANOP | CHFL_HALFOP | CHFL_VOICE;
 			else
 				break;
 			nick++;
@@ -634,7 +636,6 @@ msg_channel(int p_or_n, const char *command,
  *
  * XXX - We need to rework this a bit, it's a tad ugly. --nenolod
  */
-static void
 msg_channel_opmod(int p_or_n, const char *command,
 		  struct Client *client_p, struct Client *source_p,
 		  struct Channel *chptr, const char *text)
