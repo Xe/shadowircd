@@ -444,7 +444,7 @@ find_dline(struct sockaddr *addr, int aftype)
 	if(aconf)
 		return aconf;
 	#ifdef RB_IPV6
-		if(addr != NULL && addr->sa_family == AF_INET6 &&
+		if(ip != NULL && ipaddr->sa_family == AF_INET6 &&
 			ipv4_from_ipv6((const struct sockaddr_in6 *)(const void *)addr, &addr2))
 		{
 			aconf = find_conf_by_address(NULL, NULL, NULL, (struct sockaddr *)&addr2, CONF_DLINE | 1, AF_INET, NULL, NULL);

@@ -63,6 +63,10 @@ int h_new_local_user;
 int h_new_remote_user;
 int h_introduce_client;
 int h_can_kick;
+int h_privmsg_user;
+int h_privmsg_channel;
+int h_conf_read_start;
+int h_conf_read_end;
 
 void
 init_hook(void)
@@ -86,6 +90,10 @@ init_hook(void)
 	h_new_remote_user = register_hook("new_remote_user");
 	h_introduce_client = register_hook("introduce_client");
 	h_can_kick = register_hook("can_kick");
+	h_privmsg_user = register_hook("privmsg_user");
+	h_privmsg_channel = register_hook("privmsg_channel");
+	h_conf_read_start = register_hook("conf_read_start");
+	h_conf_read_end = register_hook("conf_read_end");
 }
 
 /* grow_hooktable()
