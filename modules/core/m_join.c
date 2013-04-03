@@ -40,6 +40,7 @@
 #include "modules.h"
 #include "packet.h"
 #include "chmode.h"
+#include "ratelimit.h"
 
 static int m_join(struct Client *, struct Client *, int, const char **);
 static int me_svsjoin(struct Client *, struct Client *, int, const char **);
@@ -245,6 +246,10 @@ ms_join(struct Client *client_p, struct Client *source_p, int parc, const char *
 			chptr->join_delta = rb_current_time();
 		}
 		chptr->join_count++;
+		
+		/* credit user for join */
+		credit_client_join(source_p);
+		
 		sendto_channel_local(ALL_MEMBERS, chptr, ":%s!%s@%s JOIN :%s",
 				     source_p->name, source_p->username,
 				     source_p->host, chptr->chname);

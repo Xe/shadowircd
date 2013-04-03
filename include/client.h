@@ -268,6 +268,10 @@ struct LocalUser
 	uint32_t targets[TGCHANGE_NUM + TGCHANGE_REPLY];
 	unsigned int targets_free;	/* free targets */
 	time_t target_last;		/* last time we cleared a slot */
+	
+	/* ratelimit items */
+	time_t ratelimit;
+	unsigned int join_who_credits;
 
 	struct ListClient *safelist_data;
 
