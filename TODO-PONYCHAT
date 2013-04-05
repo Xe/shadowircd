@@ -2,6 +2,7 @@ List of things that will be done:
 
 - Item has yet to be done
 * Item is done
++ Item is committed and compiles, but untested
 
 -- shadowircd 6.4.0
 * This is primarily made up of backports from Charybdis 3.4.0
@@ -30,7 +31,7 @@ user
   checked. 
 - Send ERR_TOOMANYCHANNELS for each channel join that fails due to channel
   limits, instead of one per JOIN command.
-- Add account-notify client capability to notify clients about logins and
++ Add account-notify client capability to notify clients about logins and
   logouts of users in common channels. See doc/account-notify.txt.
 - Add away-notify client capability. See doc/away-notify.txt.
 - Add extended-join client capability to add account name and ircname to JOIN.
