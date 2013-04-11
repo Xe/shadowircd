@@ -31,7 +31,7 @@ USER
  [-] Consider bogus CTCP ACTION messages (without action text) CTCP
      (for cmode +C).
 
- [ ] Apply colour stripping (cmode +c) and CTCP checking (cmode +C)
+ [-] Apply colour stripping (cmode +c) and CTCP checking (cmode +C)
      to messages to @/+ channel as well.
 
  [*] Channel mode +c (and other places that disallow colour codes)
