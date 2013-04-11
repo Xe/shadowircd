@@ -220,6 +220,42 @@ get_channel_access(struct Client *source_p, struct membership *msptr)
 	return CHFL_PEON;
 }
 
+/* allow_mode_change()
+ *
+ * Checks if mlock and chanops permit a mode change.
+ *
+ * inputs	- client, channel, access level, errors pointer, mode char
+ * outputs	- 0 on failure, 1 on success
+ * side effects - error message sent on failure
+ */
+static int
+allow_mode_change(struct Client *source_p, struct Channel *chptr, int alevel,
+		int *errors, char c)
+{
+	/* If this mode char is locked, don't allow local users to change it. */
+	if (MyClient(source_p) && chptr->mode_lock && strchr(chptr->mode_lock, c))
+	{
+		if (!(*errors & SM_ERR_MLOCK))
+			sendto_one_numeric(source_p,
+					ERR_MLOCKRESTRICTED,
+					form_str(ERR_MLOCKRESTRICTED),
+					chptr->chname,
+					c,
+					chptr->mode_lock);
+		*errors |= SM_ERR_MLOCK;
+		return 0;
+	}
+	if(alevel != CHFL_CHANOP && alevel != CHFL_ADMIN && alevel != CHFL_HALFOP)
+	{
+		if(!(*errors & SM_ERR_NOOPS))
+			sendto_one(source_p, form_str(ERR_CHANOPRIVSNEEDED),
+				   me.name, source_p->name, chptr->chname);
+		*errors |= SM_ERR_NOOPS;
+		return 0;
+	}
+	return 1;
+}
+
 /* add_id()
  *
  * inputs	- client, channel, id to add, type
@@ -535,19 +571,8 @@ chm_simple(struct Client *source_p, struct Channel *chptr,
 	struct Metadata *md;
 	struct DictionaryIter iter;
 	
-	if(alevel != CHFL_CHANOP && alevel != CHFL_ADMIN && alevel != CHFL_HALFOP)
-	{
-		if (IsOverride(source_p))
-			override = 1;
-		else
-		{
-			if(!(*errors & SM_ERR_NOOPS))
-				sendto_one(source_p, form_str(ERR_CHANOPRIVSNEEDED),
-						me.name, source_p->name, chptr->chname);
-			*errors |= SM_ERR_NOOPS;
-			return;
-		}
-	}
+	if(!allow_mode_change(source_p, chptr, alevel, errors, c)) 
+		return;
 
 	if(MyClient(source_p) && (++mode_limit_simple > MAXMODES_SIMPLE))
 		return;
@@ -878,6 +903,7 @@ chm_ban(struct Client *source_p, struct Channel *chptr,
 		*errors |= errorval;
 
 		/* non-ops cant see +eI lists.. */
+		/* note that this is still permitted if +e/+I are mlocked. */ 
 		if(alevel != CHFL_CHANOP && alevel != CHFL_ADMIN && alevel != CHFL_HALFOP && mode_type != CHFL_BAN &&
 				mode_type != CHFL_QUIET)
 		{
@@ -912,21 +938,9 @@ chm_ban(struct Client *source_p, struct Channel *chptr,
 		return;
 	}
 
-	if(alevel != CHFL_CHANOP && alevel != CHFL_ADMIN && alevel != CHFL_HALFOP)
-	{
-		if(IsOverride(source_p))
-			override = 1;
-		else
-		{
-
-			if(!(*errors & SM_ERR_NOOPS))
-				sendto_one(source_p, form_str(ERR_CHANOPRIVSNEEDED),
-						me.name, source_p->name, chptr->chname);
-			*errors |= SM_ERR_NOOPS;
-			return;
-		}
-	}
-
+	if(!allow_mode_change(source_p, chptr, alevel, errors, c))
+		return;
+	
 	if(MyClient(source_p) && (++mode_limit > MAXMODEPARAMS))
 		return;
 
@@ -1121,20 +1135,8 @@ chm_op(struct Client *source_p, struct Channel *chptr,
 	struct Client *targ_p;
 	int override = 0;
 
-	if(alevel != CHFL_CHANOP && alevel != CHFL_ADMIN)
-	{
-		if(IsOverride(source_p))
-			override = 1;
-		else
-		{
-
-			if(!(*errors & SM_ERR_NOOPS))
-				sendto_one(source_p, form_str(ERR_CHANOPRIVSNEEDED),
-						me.name, source_p->name, chptr->chname);
-			*errors |= SM_ERR_NOOPS;
-			return;
-		}
-	}
+	if(!allow_mode_change(source_p, chptr, alevel, errors, c)) 
+		return;
 
 	if((dir == MODE_QUERY) || (parc <= *parn))
 		return;
@@ -1425,19 +1427,8 @@ chm_limit(struct Client *source_p, struct Channel *chptr,
 	int limit;
 	int override = 0;
 
-	if(alevel != CHFL_CHANOP && alevel != CHFL_ADMIN && alevel != CHFL_HALFOP)
-	{
-		if(IsOverride(source_p))
-			override = 1;
-		else
-		{
-			if(!(*errors & SM_ERR_NOOPS))
-				sendto_one(source_p, form_str(ERR_CHANOPRIVSNEEDED),
-						me.name, source_p->name, chptr->chname);
-			*errors |= SM_ERR_NOOPS;
-			return;
-		}
-	}
+	if(!allow_mode_change(source_p, chptr, alevel, errors, c)) 
+		return;
 
 	if(dir == MODE_QUERY)
 		return;
@@ -1492,20 +1483,8 @@ chm_throttle(struct Client *source_p, struct Channel *chptr,
 	int joins = 0, timeslice = 0;
 	int override = 0;
 
-	if(alevel != CHFL_CHANOP && alevel != CHFL_ADMIN && alevel != CHFL_HALFOP)
-	{
-		if(IsOverride(source_p))
-			override = 1;
-		else
-		{
-
-			if(!(*errors & SM_ERR_NOOPS))
-				sendto_one(source_p, form_str(ERR_CHANOPRIVSNEEDED),
-						me.name, source_p->name, chptr->chname);
-			*errors |= SM_ERR_NOOPS;
-			return;
-		}
-	}
+	if(!allow_mode_change(source_p, chptr, alevel, errors, c)) 
+		return;
 
 	if(dir == MODE_QUERY)
 		return;
@@ -1584,19 +1563,8 @@ chm_forward(struct Client *source_p, struct Channel *chptr,
 	}
 
 #ifndef FORWARD_OPERONLY
-	if(alevel != CHFL_CHANOP && alevel != CHFL_ADMIN && alevel != CHFL_HALFOP)
-	{
-		if(IsOverride(source_p))
-			override = 1;
-		else
-		{
-			if(!(*errors & SM_ERR_NOOPS))
-				sendto_one(source_p, form_str(ERR_CHANOPRIVSNEEDED),
-						me.name, source_p->name, chptr->chname);
-			*errors |= SM_ERR_NOOPS;
-			return;
-		}
-	}
+	if(!allow_mode_change(source_p, chptr, alevel, errors, c)) 
+	return;
 #else
 	if(!IsOper(source_p) && !IsServer(source_p))
 	{
@@ -1689,19 +1657,8 @@ chm_key(struct Client *source_p, struct Channel *chptr,
 	char *key;
 	int override = 0;
 
-	if(alevel != CHFL_CHANOP && alevel != CHFL_ADMIN && alevel != CHFL_HALFOP)
-	{
-		if(IsOverride(source_p))
-			override = 1;
-		else
-		{
-			if(!(*errors & SM_ERR_NOOPS))
-				sendto_one(source_p, form_str(ERR_CHANOPRIVSNEEDED),
-						me.name, source_p->name, chptr->chname);
-			*errors |= SM_ERR_NOOPS;
-			return;
-		}
-	}
+	if(!allow_mode_change(source_p, chptr, alevel, errors, c)) 
+		return;
 
 	if(dir == MODE_QUERY)
 		return;
@@ -2098,19 +2055,6 @@ set_channel_mode(struct Client *client_p, struct Client *source_p,
 			dir = MODE_QUERY;
 			break;
 		default:
-			/* If this mode char is locked, don't allow local users to change it. */
-			if (MyClient(source_p) && chptr->mode_lock && strchr(chptr->mode_lock, c))
-			{
-				if (!(errors & SM_ERR_MLOCK))
-					sendto_one_numeric(source_p,
-							ERR_MLOCKRESTRICTED,
-							form_str(ERR_MLOCKRESTRICTED),
-							chptr->chname,
-							c,
-							chptr->mode_lock);
-				errors |= SM_ERR_MLOCK;
-				continue;
-			}
 			chmode_table[(unsigned char) c].set_func(fakesource_p, chptr, alevel,
 				       parc, &parn, parv,
 				       &errors, dir, c,
