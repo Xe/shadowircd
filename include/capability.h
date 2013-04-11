@@ -24,16 +24,15 @@
 struct CapabilityIndex;
 struct CapabilityEntry;
 
-extern unsigned int capability_get(struct CapabilityIndex *idx, const char *cap);
-extern unsigned int capability_put(struct CapabilityIndex *idx, const char *cap);
-extern void capability_orphan(struct CapabilityIndex *idx, const char *cap);
-extern void capability_require(struct CapabilityIndex *idx, const char *cap); 
+extern unsigned int capability_get(struct CapabilityIndex *index, const char *cap);
+extern unsigned int capability_put(struct CapabilityIndex *index, const char *cap);
+extern void capability_orphan(struct CapabilityIndex *index, const char *cap);
+extern void capability_require(struct CapabilityIndex *index, const char *cap); 
 
-extern struct CapabilityIndex *capability_index_create(const char *name); 
+extern struct CapabilityIndex *capability_index_create(void);
 extern void capability_index_destroy(struct CapabilityIndex *);
 extern const char *capability_index_list(struct CapabilityIndex *, unsigned int capability_mask);
 extern unsigned int capability_index_mask(struct CapabilityIndex *);
-extern unsigned int capability_index_get_required(struct CapabilityIndex *);
-extern void capability_index_stats(void (*cb)(const char *line, void *privdata), void *privdata);  
+extern unsigned int capability_index_get_required(struct CapabilityIndex *); 
 
 #endif

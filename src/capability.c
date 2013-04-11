@@ -22,13 +22,9 @@
 #include "capability.h"
 #include "irc_dictionary.h"
 
-static rb_dlink_list capability_indexes = { NULL, NULL, 0 }; 
-
 struct CapabilityIndex {
-	char *name;
 	struct Dictionary *cap_dict;
 	unsigned int highest_bit;
-	rb_dlink_node node;
 };
 
 #define CAP_ORPHANED  0x1 
@@ -41,68 +37,67 @@ struct CapabilityEntry {
 };
 
 unsigned int
-capability_get(struct CapabilityIndex *idx, const char *cap)
+capability_get(struct CapabilityIndex *index, const char *cap)
 {
 	struct CapabilityEntry *entry;
 
-	s_assert(idx != NULL);
+	s_assert(index != NULL);
 
-	entry = irc_dictionary_retrieve(idx->cap_dict, cap);
+	entry = irc_dictionary_retrieve(index->cap_dict, cap);
 	if (entry != NULL && !(entry->flags & CAP_ORPHANED))
-		return (1 << entry->value);
+		return entry->value;
 
 	return 0xFFFFFFFF;
 }
 
 unsigned int
-capability_put(struct CapabilityIndex *idx, const char *cap)
+capability_put(struct CapabilityIndex *index, const char *cap)
 {
 	struct CapabilityEntry *entry;
 
-	s_assert(idx != NULL);
-	if (!idx->highest_bit)
-		return 0xFFFFFFFF;
+	s_assert(index != NULL);
 
-	if ((entry = irc_dictionary_retrieve(idx->cap_dict, cap)) != NULL)
+	if ((entry = irc_dictionary_retrieve(index->cap_dict, cap)) != NULL)
 	{
 		entry->flags &= ~CAP_ORPHANED;
-		return (1 << entry->value);
+		return entry->value;
 	}
 
 	entry = rb_malloc(sizeof(struct CapabilityEntry));
-	entry->cap = rb_strdup(cap); 
 	entry->flags = 0;
-	entry->value = idx->highest_bit;
+	entry->value = index->highest_bit;
 
-	irc_dictionary_add(idx->cap_dict, entry->cap, entry);
+	irc_dictionary_add(index->cap_dict, cap, entry);
 
-	idx->highest_bit++;
-	if (idx->highest_bit % (sizeof(unsigned int) * 8) == 0)
-		idx->highest_bit = 0; 
+	index->highest_bit <<= 1;
 
-	return (1 << entry->value); 
+	/* hmm... not sure what to do here, so i guess we will abort for now... --nenolod */
+	if (index->highest_bit == 0)
+		abort();
+
+	return entry->value;
 }
 
 void
-capability_orphan(struct CapabilityIndex *idx, const char *cap)
+capability_orphan(struct CapabilityIndex *index, const char *cap)
 {
 	struct CapabilityEntry *entry;
 
-	s_assert(idx != NULL);
+	s_assert(index != NULL);
 
-	entry = irc_dictionary_retrieve(idx->cap_dict, cap);
+	entry = irc_dictionary_retrieve(index->cap_dict, cap);
 	if (entry != NULL)
 		entry->flags &= ~CAP_REQUIRED;
 }
 
 void
-capability_require(struct CapabilityIndex *idx, const char *cap)
+capability_require(struct CapabilityIndex *index, const char *cap)
 {
 	struct CapabilityEntry *entry;
 
-	s_assert(idx != NULL);
+	s_assert(index != NULL);
 
-	entry = irc_dictionary_retrieve(idx->cap_dict, cap);
+	entry = irc_dictionary_retrieve(index->cap_dict, cap);
 	if (entry != NULL)
 		entry->flags |= CAP_REQUIRED; 
 }
@@ -116,33 +111,28 @@ capability_destroy(struct DictionaryElement *delem, void *privdata)
 }
 
 struct CapabilityIndex *
-capability_index_create(const char *name)
+capability_index_create(void)
 {
-	struct CapabilityIndex *idx;
+	struct CapabilityIndex *index;
 
-	idx = rb_malloc(sizeof(struct CapabilityIndex));
-	idx->name = rb_strdup(name); 
-	idx->cap_dict = irc_dictionary_create(strcasecmp);
-	idx->highest_bit = 1;
-	
-	rb_dlinkAdd(index, &idx->node, &capability_indexes); 
+	index = rb_malloc(sizeof(struct CapabilityIndex));
+	index->cap_dict = irc_dictionary_create(strcasecmp);
+	index->highest_bit = 1;
 
 	return index;
 }
 
 void
-capability_index_destroy(struct CapabilityIndex *idx)
+capability_index_destroy(struct CapabilityIndex *index)
 {
-	s_assert(idx != NULL);
-	
-	rb_dlinkDelete(&idx->node, &capability_indexes);
+	s_assert(index != NULL);
 
-	irc_dictionary_destroy(idx->cap_dict, capability_destroy, NULL);
+	irc_dictionary_destroy(index->cap_dict, capability_destroy, NULL);
 	rb_free(index);
 }
 
 const char *
-capability_index_list(struct CapabilityIndex *idx, unsigned int cap_mask)
+capability_index_list(struct CapabilityIndex *index, unsigned int cap_mask)
 {
   struct DictionaryIter iter;
   struct CapabilityEntry *entry;
@@ -150,15 +140,15 @@ capability_index_list(struct CapabilityIndex *idx, unsigned int cap_mask)
   char *t = buf;
   int tl;
 
-  s_assert(idx != NULL);
+  s_assert(index != NULL);
 
   *t = '\0';
 
-  DICTIONARY_FOREACH(entry, &iter, idx->cap_dict)
+  DICTIONARY_FOREACH(entry, &iter, index->cap_dict)
   {
     if (entry->value & cap_mask)
     {
-      tl = rb_sprintf(t, "%s ", entry->cap);
+      tl = rb_sprintf(t, "%s ", iter.cur->key);
       t += tl;
     }
   }
@@ -170,67 +160,37 @@ capability_index_list(struct CapabilityIndex *idx, unsigned int cap_mask)
 }
 
 unsigned int
-capability_index_mask(struct CapabilityIndex *idx)
+capability_index_mask(struct CapabilityIndex *index)
 {
   struct DictionaryIter iter;
   struct CapabilityEntry *entry;
   unsigned int mask = 0;
 
-  s_assert(idx != NULL);
+  s_assert(index != NULL);
 
-  DICTIONARY_FOREACH(entry, &iter, idx->cap_dict)
+  DICTIONARY_FOREACH(entry, &iter, index->cap_dict)
   {
     if (!(entry->flags & CAP_ORPHANED))
-      mask |= (1 << entry->value);
+      mask |= entry->value;
   }
 
   return mask;
 } 
 
 unsigned int
-capability_index_get_required(struct CapabilityIndex *idx)
+capability_index_get_required(struct CapabilityIndex *index)
 {
 	struct DictionaryIter iter;
 	struct CapabilityEntry *entry;
 	unsigned int mask = 0;
 
-	s_assert(idx != NULL);
+	s_assert(index != NULL);
 
-	DICTIONARY_FOREACH(entry, &iter, idx->cap_dict)
+	DICTIONARY_FOREACH(entry, &iter, index->cap_dict)
 	{
 	if (!(entry->flags & CAP_ORPHANED) && (entry->flags & CAP_REQUIRED))
-		mask |= (1 << entry->value);
+		mask |= entry->value;
 	}
 
 	return mask;
-} 
-
-void
-capability_index_stats(void (*cb)(const char *line, void *privdata), void *privdata)
-{
-	rb_dlink_node *node;
-	char buf[BUFSIZE];
-
-	RB_DLINK_FOREACH(node, capability_indexes.head)
-	{
-		struct CapabilityIndex *idx = node->data;
-		struct DictionaryIter iter;
-		struct CapabilityEntry *entry;
-
-		rb_snprintf(buf, sizeof buf, "'%s': allocated bits - %d", idx->name, (idx->highest_bit - 1));
-cb(buf, privdata);
-
-		DICTIONARY_FOREACH(entry, &iter, idx->cap_dict)
-		{
-			rb_snprintf(buf, sizeof buf, "bit %d: '%s'", entry->value, entry->cap);
-			cb(buf, privdata);
-		}
-
-		rb_snprintf(buf, sizeof buf, "'%s': remaining bits - %ld", idx->name,
-					(sizeof(unsigned int) * 8) - (idx->highest_bit - 1));
-		cb(buf, privdata);
-	}
-
-	rb_snprintf(buf, sizeof buf, "%ld capability indexes", rb_dlink_list_length(&capability_indexes));
-	cb(buf, privdata);
 } 
