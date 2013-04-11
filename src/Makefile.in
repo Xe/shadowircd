@@ -58,50 +58,51 @@ lex.yy.c:	ircd_lexer.l
 	${LEX} ircd_lexer.l
 
 SRCS =                          \
-  bandbi.c			\
-  blacklist.c			\
-  cache.c			\
+  bandbi.c						\
+  blacklist.c					\
+  cache.c						\
+  capability.c					\
   channel.c                     \
-  chmode.c			\
+  chmode.c						\
   class.c                       \
   client.c                      \
   extban.c                      \
   getopt.c                      \
   hash.c                        \
   hook.c                        \
-  hostmask.c			\
-  irc_dictionary.c		\
-  ipv4_from_ipv6.c		\
+  hostmask.c					\
+  irc_dictionary.c				\
+  ipv4_from_ipv6.c				\
   ircd.c                        \
   ircd_signal.c                 \
   listener.c                    \
   logger.c                      \
   match.c                       \
   modules.c                     \
-  monitor.c			\
-  newconf.c			\
+  monitor.c						\
+  newconf.c						\
   numeric.c                     \
   operhash.c                    \
   packet.c                      \
   parse.c                       \
-  privilege.c			\
-  ratelimit.c			\
-  res.c				\
-  reslib.c			\
-  reject.c			\
+  privilege.c					\
+  ratelimit.c					\
+  res.c							\
+  reslib.c						\
+  reject.c						\
   restart.c                     \
   s_auth.c                      \
   s_conf.c                      \
-  s_newconf.c			\
+  s_newconf.c					\
   s_serv.c                      \
   s_user.c                      \
   scache.c                      \
   send.c                        \
-  snomask.c			\
-  sslproc.c			\
-  substitution.c		\
-  supported.c			\
-  tgchange.c			\
+  snomask.c						\
+  sslproc.c						\
+  substitution.c				\
+  supported.c					\
+  tgchange.c					\
   whowas.c
 
 OBJS = ${SRCS:.c=.o}
