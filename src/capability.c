@@ -35,6 +35,7 @@ struct CapabilityIndex {
 #define CAP_REQUIRED  0x2 
 	
 struct CapabilityEntry {
+	char *cap;
 	unsigned int value;
 	unsigned int flags;
 };
