@@ -58,7 +58,7 @@ USER
 
  [ ] Disallow wildcarded nicknames in "hunted" parameters like /stats and /motd.
 
- [ ] Disallow mIRC italics in channel names when disable_fake_channels.
+ [*] Disallow mIRC italics in channel names when disable_fake_channels.
 
  [ ] Add AUTHENTICATE EXTERNAL support, allows SASL authentication
      using an SSL certificate fingerprint.
@@ -95,7 +95,7 @@ OPER
 
 CONFIG
 
- [ ] Add support for IPv6 DNSBLs. A new "type" option specifies the IP
+ [-] Add support for IPv6 DNSBLs. A new "type" option specifies the IP
      version(s) for which each DNSBL should be checked.
 
  [ ] Make flood control settings configurable by those who know exactly
