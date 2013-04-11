@@ -64,6 +64,7 @@ capability_put(struct CapabilityIndex *index, const char *cap)
 	}
 
 	entry = rb_malloc(sizeof(struct CapabilityEntry));
+	entry->cap = rb_strdup(cap);
 	entry->flags = 0;
 	entry->value = index->highest_bit;
 
