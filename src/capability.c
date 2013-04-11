@@ -68,7 +68,7 @@ capability_put(struct CapabilityIndex *index, const char *cap)
 	entry->flags = 0;
 	entry->value = index->highest_bit;
 
-	irc_dictionary_add(index->cap_dict, cap, entry);
+	irc_dictionary_add(index->cap_dict, entry->cap, entry);
 
 	index->highest_bit <<= 1;
 
