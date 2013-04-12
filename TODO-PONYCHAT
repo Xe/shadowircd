@@ -10,7 +10,7 @@ List of things that will be done:
 
 SERVER PROTOCOL
 
- [ ] Add channel ban forwarding <mask>$<channel> much like
+ [*] Add channel ban forwarding <mask>$<channel> much like
      ircd-seven. Local use of this is controlled by the
      channel::use_forward config option.
 
