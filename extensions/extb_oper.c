@@ -39,6 +39,6 @@ static int eb_oper(const char *data, struct Client *client_p,
 	(void)mode_type;
 	
 	if (data != NULL)
-		return IsOper(client_p) ? EXTBAN_MATCH : EXTBAN_NOMATCH; 
-	return HasPrivilege(client_p, data) ? EXTBAN_MATCH : EXTBAN_NOMATCH; 
+		return HasPrivilege(client_p, data) ? EXTBAN_MATCH : EXTBAN_NOMATCH; 
+	return IsOper(client_p) ? EXTBAN_MATCH : EXTBAN_NOMATCH; 
 }
