@@ -49,7 +49,6 @@ USER
 
  [-] Add account-notify client capability to notify clients about logins
      and logouts of users in common channels. See doc/account-notify.txt.
-     (commit 8983cb41)
 
  [ ] Add away-notify client capability. See doc/away-notify.txt.
 
@@ -115,9 +114,9 @@ CONFIG
      match a newly set nick RESV, default enabled.
 
  [*] Add extb_usermode extension, $m:+-<modes> extban matching against
-     umodes. DONE 2013-03-27
+     umodes. 
 
- [ ] Extend extb_oper extension to allow matching against oper
+ [*] Extend extb_oper extension to allow matching against oper
      privileges.
 
 
