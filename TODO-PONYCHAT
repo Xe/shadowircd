@@ -59,7 +59,7 @@ USER
 
  [*] Disallow mIRC italics in channel names when disable_fake_channels.
 
- [ ] Add AUTHENTICATE EXTERNAL support, allows SASL authentication
+ [*] Add AUTHENTICATE EXTERNAL support, allows SASL authentication
      using an SSL certificate fingerprint.
 
  [ ] Allow channel::kick_on_split_riding to protect channels with
@@ -75,7 +75,7 @@ USER
  [*] Allow normal users to perform /privs on themselves, showing some
      privileges from the auth{} block.
 
- [ ] Rate limit high-bandwidth commands, in particular /who <channel>.
+ [*] Rate limit high-bandwidth commands, in particular /who <channel>.
 
  [ ] Rate limit /away to help avoid flooding via away-notify.
 
@@ -84,7 +84,7 @@ OPER
 
  [ ] Add operspy for /list.
 
- [ ] Add /stats C to show information about dynamically loaded server
+ [*] Add /stats C to show information about dynamically loaded server
      capabilities.
 
  [ ] Add a server notice to snomask +b if a user exceeds target change limits.
