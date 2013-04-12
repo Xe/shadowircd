@@ -102,12 +102,13 @@ free_channel(struct Channel *chptr)
 }
 
 struct Ban *
-allocate_ban(const char *banstr, const char *who)
+allocate_ban(const char *banstr, const char *who, const char *forward)
 {
 	struct Ban *bptr;
 	bptr = rb_bh_alloc(ban_heap);
 	bptr->banstr = rb_strdup(banstr);
 	bptr->who = rb_strdup(who);
+	bptr->forward = forward ? rb_strdup(forward) : NULL; 
 
 	return (bptr);
 }
@@ -117,6 +118,7 @@ free_ban(struct Ban *bptr)
 {
 	rb_free(bptr->banstr);
 	rb_free(bptr->who);
+	rb_free(bptr->forward); 
 	rb_bh_free(ban_heap, bptr);
 }
 
@@ -602,7 +604,7 @@ del_invite(struct Channel *chptr, struct Client *who)
  */
 int
 is_banned_list(struct Channel *chptr, rb_dlink_list *list, struct Client *who, struct membership *msptr,
-	  const char *s, const char *s2)
+	  const char *s, const char *s2, const char **forward)
 {
 	char src_host[NICKLEN + USERLEN + HOSTLEN + 6];
 	char src_iphost[NICKLEN + USERLEN + HOSTLEN + 6];
@@ -714,6 +716,9 @@ is_banned_list(struct Channel *chptr, rb_dlink_list *list, struct Client *who, s
 			return 0;
 		}
 	}
+	
+	if (actualBan && actualBan->forward && forward)
+		*forward = actualBan->forward;
 
 	return ((actualBan ? CHFL_BAN : 0));
 }
@@ -727,9 +732,9 @@ is_banned_list(struct Channel *chptr, rb_dlink_list *list, struct Client *who, s
  */
 int
 is_banned(struct Channel *chptr, struct Client *who, struct membership *msptr,
-	   const char *s, const char *s2)
+	   const char *s, const char *s2, const char **forward)
 {
-	return is_banned_list(chptr, &chptr->banlist, who, msptr, s, s2);
+	return is_banned_list(chptr, &chptr->banlist, who, msptr, s, s2, forward);
 }
 
 
@@ -744,7 +749,7 @@ int
 is_quieted(struct Channel *chptr, struct Client *who, struct membership *msptr,
 	   const char *s, const char *s2)
 {
-	return is_banned_list(chptr, &chptr->quietlist, who, msptr, s, s2);
+	return is_banned_list(chptr, &chptr->quietlist, who, msptr, s, s2, NULL);
 }
 
 /* can_join()
@@ -754,7 +759,7 @@ is_quieted(struct Channel *chptr, struct Client *who, struct membership *msptr,
  * side effects -
  */
 int
-can_join(struct Client *source_p, struct Channel *chptr, char *key)
+can_join(struct Client *source_p, struct Channel *chptr, char *key, const char **forward)
 {
 	rb_dlink_node *invite = NULL;
 	rb_dlink_node *ptr;
@@ -790,7 +795,7 @@ can_join(struct Client *source_p, struct Channel *chptr, char *key)
 		}
 	}
 
-	if((is_banned(chptr, source_p, NULL, src_host, src_iphost)) == CHFL_BAN)
+	if((is_banned(chptr, source_p, NULL, src_host, src_iphost, forward)) == CHFL_BAN)
 		return (ERR_BANNEDFROMCHAN);
 
 	rb_snprintf(text, sizeof(text), "K%s", source_p->id);
@@ -803,6 +808,15 @@ can_join(struct Client *source_p, struct Channel *chptr, char *key)
 		if(!strcmp(md->value, "KICKNOREJOIN") && !(md->timevalue + 2 > rb_current_time()))  
 			channel_metadata_delete(chptr, md->name, 0);
 	}
+	
+	if(*chptr->mode.key && (EmptyString(key) || irccmp(chptr->mode.key, key)))
+	{
+		return ERR_BADCHANNELKEY;
+	}
+
+	/* All checks from this point on will forward... */
+	if(forward)
+		*forward = chptr->mode.forward; 
 
 	if(chptr->mode.mode & MODE_INVITEONLY)
 	{
@@ -829,9 +843,6 @@ can_join(struct Client *source_p, struct Channel *chptr, char *key)
 				return (ERR_INVITEONLYCHAN);
 		}
 	}
-
-	if(*chptr->mode.key && (EmptyString(key) || irccmp(chptr->mode.key, key)))
-		return (ERR_BADCHANNELKEY);
 
 	if(chptr->mode.limit &&
 	   rb_dlink_list_length(&chptr->members) >= (unsigned long) chptr->mode.limit)
@@ -915,7 +926,7 @@ can_send(struct Channel *chptr, struct Client *source_p, struct membership *mspt
 			if(can_send_banned(msptr))
 				return CAN_SEND_NO;
 		}
-		else if(is_banned(chptr, source_p, msptr, NULL, NULL) == CHFL_BAN
+		else if(is_banned(chptr, source_p, msptr, NULL, NULL, NULL) == CHFL_BAN
 			|| is_quieted(chptr, source_p, msptr, NULL, NULL) == CHFL_BAN)
 			return CAN_SEND_NO;
 	}
@@ -1010,7 +1021,7 @@ find_bannickchange_channel(struct Client *client_p)
 			if (can_send_banned(msptr))
 				return chptr;
 		}
-		else if (is_banned(chptr, client_p, msptr, src_host, src_iphost) == CHFL_BAN
+		else if (is_banned(chptr, client_p, msptr, src_host, src_iphost, NULL) == CHFL_BAN
 			|| is_quieted(chptr, client_p, msptr, src_host, src_iphost) == CHFL_BAN)
 			return chptr;
 	}
@@ -1477,9 +1488,16 @@ resv_chan_forcepart(const char *name, const char *reason, int temp_time)
  */
 struct Channel *
 check_forward(struct Client *source_p, struct Channel *chptr,
-		char *key)
+		char *key, int *err)
 {
 	int depth = 0, i;
+	char *next = NULL;
+
+	/* The caller (m_join) is only interested in the reason
+	* for the original channel.
+	*/
+	if ((*err = can_join(source_p, chptr, key, &next)) == 0)
+		return chptr; 
 
 	/* User is +Q */
 	if (IsNoForward(source_p))
@@ -1487,7 +1505,7 @@ check_forward(struct Client *source_p, struct Channel *chptr,
 
 	while (depth < 16)
 	{
-		chptr = find_channel(chptr->mode.forward);
+		chptr = find_channel(next);
 		/* Can only forward to existing channels */
 		if (chptr == NULL)
 			return NULL;
@@ -1500,10 +1518,10 @@ check_forward(struct Client *source_p, struct Channel *chptr,
 		/* Don't forward to +Q channel */
 		if (chptr->mode.mode & MODE_DISFORWARD)
 			return NULL;
-		i = can_join(source_p, chptr, key);
+		i = can_join(source_p, chptr, key, &next);
 		if (i == 0)
 			return chptr;
-		if (i != ERR_INVITEONLYCHAN && i != ERR_NEEDREGGEDNICK && i != ERR_THROTTLE && i != ERR_CHANNELISFULL)
+		if (next == NULL)
 			return NULL;
 		depth++;
 	}
@@ -1587,7 +1605,7 @@ check_channel_name_loc(struct Client *source_p, const char *name)
 void user_join(struct Client * client_p, struct Client * source_p, const char * channels, const char * keys)
 {
 	static char jbuf[BUFSIZE];
-	struct Channel *chptr = NULL;
+	struct Channel *chptr = NULL, *chptr2 = NULL;
 	struct ConfItem *aconf;
 	char *name;
 	char *key = NULL;
@@ -1675,8 +1693,6 @@ void user_join(struct Client * client_p, struct Client * source_p, const char * 
 	for(name = rb_strtok_r(jbuf, ",", &p); name;
 	    key = (key) ? rb_strtok_r(NULL, ",", &p2) : NULL, name = rb_strtok_r(NULL, ",", &p))
 	{
-		hook_data_channel_activity hook_info;
-
 		/* JOIN 0 simply parts all channels the user is in */
 		if(*name == '0' && !atoi(name))
 		{
@@ -1748,8 +1764,8 @@ void user_join(struct Client * client_p, struct Client * source_p, const char * 
 			}
 		}
 
-		/* can_join checks for +i key, bans etc */
-		if((i = can_join(source_p, chptr, key)))
+		/* If check_forward returns NULL, they couldn't join and there wasn't a usable forward channel. */
+		if(!(chptr2 = check_forward(source_p, chptr, key, &i))) 
 		{
 			if(IsOverride(source_p))
 			{
@@ -1760,21 +1776,23 @@ void user_join(struct Client * client_p, struct Client * source_p, const char * 
 						":%s WALLOPS :%s is overriding JOIN to [%s]",
 						me.name, get_oper_name(source_p), chptr->chname);
 			}
-			else if ((i != ERR_NEEDREGGEDNICK && i != ERR_THROTTLE && i != ERR_INVITEONLYCHAN && i != ERR_CHANNELISFULL) ||
-			    (!ConfigChannel.use_forward || (chptr = check_forward(source_p, chptr, key)) == NULL))
+			/* might be wrong, but is there any other better location for such?
+			 * see extensions/chm_operonly.c for other comments on this
+			 * -- dwr
+			 */
+			if(i != ERR_CUSTOM)
 			{
-				/* might be wrong, but is there any other better location for such?
-				 * see extensions/chm_operonly.c for other comments on this
-				 * -- dwr
-				 */
-				if(i != ERR_CUSTOM)
-					sendto_one(source_p, form_str(i), me.name, source_p->name, name);
-
+				sendto_one(source_p, form_str(i), me.name, source_p->name, name);
 				continue;
 			}
 			else
-				sendto_one_numeric(source_p, ERR_LINKCHANNEL, form_str(ERR_LINKCHANNEL), name, chptr->chname);
-		}
+			
+				continue;
+		} 
+		if(chptr != chptr2) 
+			sendto_one_numeric(source_p, ERR_LINKCHANNEL, form_str(ERR_LINKCHANNEL), name, chptr2->chname); 
+			
+		chptr = chptr2;
 		
 		if(flags == 0 &&
      					!IsOper(source_p) && !IsExemptSpambot(source_p))
@@ -1848,6 +1866,8 @@ void user_join(struct Client * client_p, struct Client * source_p, const char * 
 		}
 
 		channel_member_names(chptr, source_p, 1);
+		
+		hook_data_channel_activity hook_info;
 
 		hook_info.client = source_p;
 		hook_info.chptr = chptr;

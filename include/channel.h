@@ -98,6 +98,7 @@ struct Ban
 	char *banstr;
 	char *who;
 	time_t when;
+	char *forward;
 	rb_dlink_node node;
 };
 
@@ -223,7 +224,7 @@ void init_channels(void);
 
 struct Channel *allocate_channel(const char *chname);
 void free_channel(struct Channel *chptr);
-struct Ban *allocate_ban(const char *, const char *);
+struct Ban *allocate_ban(const char *, const char *, const char *);
 void free_ban(struct Ban *bptr);
 
 
@@ -234,10 +235,11 @@ extern int can_send(struct Channel *chptr, struct Client *who,
 extern int flood_attack_channel(int p_or_n, struct Client *source_p,
 				struct Channel *chptr, char *chname);
 extern int is_banned(struct Channel *chptr, struct Client *who,
-		     struct membership *msptr, const char *, const char *);
+		     struct membership *msptr, const char *, const char *, const char **);
 extern int is_quieted(struct Channel *chptr, struct Client *who,
 		     struct membership *msptr, const char *, const char *);
-extern int can_join(struct Client *source_p, struct Channel *chptr, char *key);
+extern int can_join(struct Client *source_p, struct Channel *chptr, char *key,
+			const char **forward);
 
 extern struct membership *find_channel_membership(struct Channel *, struct Client *);
 extern const char *find_channel_status(struct membership *msptr, int combine);
@@ -291,9 +293,10 @@ extern void set_channel_mlock(struct Client *client_p, struct Client *source_p,
 extern struct ChannelMode chmode_table[256];
 
 extern int add_id(struct Client *source_p, struct Channel *chptr, const char *banid,
-       rb_dlink_list * list, long mode_type);
+       const char *forward, rb_dlink_list * list, long mode_type);
 
-extern int del_id(struct Channel *chptr, const char *banid, rb_dlink_list * list, long mode_type);
+extern struct Ban * del_id(struct Channel *chptr, const char *banid, rb_dlink_list * list,
+	long mode_type);
 
 extern ExtbanFunc extban_table[256];
 
@@ -301,7 +304,7 @@ extern int match_extban(const char *banstr, struct Client *client_p, struct Chan
 extern int valid_extban(const char *banstr, struct Client *client_p, struct Channel *chptr, long mode_type);
 const char * get_extban_string(void);
 
-extern struct Channel * check_forward(struct Client *source_p, struct Channel *chptr, char *key);
+extern struct Channel * check_forward(struct Client *source_p, struct Channel *chptr, char *key, int *err);
 extern void user_join(struct Client * client_p, struct Client * source_p, const char * channels, const char * keys);
 extern void do_join_0(struct Client *client_p, struct Client *source_p);
 extern int check_channel_name_loc(struct Client *source_p, const char *name);
