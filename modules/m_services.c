@@ -186,7 +186,7 @@ me_rsfnc(struct Client *client_p, struct Client *source_p,
 		 * safety --anfl
 		 */
 		if(target_p == exist_p)
-			return 0;
+			goto doit;
 
 		if(MyClient(exist_p))
 			sendto_one(exist_p, ":%s KILL %s :(Nickname regained by services)",
@@ -203,6 +203,7 @@ me_rsfnc(struct Client *client_p, struct Client *source_p,
 		exit_client(NULL, exist_p, &me, buf);
 	}
 
+doit:
 	newts = atol(parv[3]);
 
 	/* timestamp is older than 15mins, ignore it */
