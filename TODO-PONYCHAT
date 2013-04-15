@@ -14,7 +14,7 @@ SERVER PROTOCOL
      ircd-seven. Local use of this is controlled by the
      channel::use_forward config option.
 
- [ ] Allow RSFNC (forced nick change from services) to change a
+ [-] Allow RSFNC (forced nick change from services) to change a
      nickname's capitalization only.
 
  [ ] Add ENCAP TGINFO to propagate IP addresses that exceeded target
@@ -61,9 +61,6 @@ USER
 
  [*] Add AUTHENTICATE EXTERNAL support, allows SASL authentication
      using an SSL certificate fingerprint.
-
- [ ] Allow channel::kick_on_split_riding to protect channels with
-     mlocked keys.  This works with atheme-services 5.2.0 or newer.
 
  [ ] The NICKLEN token in 005 now only specifies the maximum nick length
      for this server/user. The MAXNICKLEN token specifies the maximum
