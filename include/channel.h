@@ -315,5 +315,6 @@ extern void channel_metadata_delete(struct Channel *target, const char *name, in
 extern struct Metadata *channel_metadata_find(struct Channel *target, const char *name);
 extern void channel_metadata_clear(struct Channel *target);
 
+extern void send_channel_join(struct Channel *chptr, struct Client *client_p); 
 
 #endif /* INCLUDED_channel_h */

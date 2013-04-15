@@ -103,9 +103,7 @@ mo_ojoin(struct Client *client_p, struct Client *source_p, int parc, const char 
 		sendto_server(client_p, chptr, CAP_TS6, NOCAPS,
 			      ":%s SJOIN %ld %s + :!%s",
 			      me.id, (long) chptr->channelts, chptr->chname, source_p->id);
-		sendto_channel_local(ALL_MEMBERS, chptr, ":%s!%s@%s JOIN %s",
-				     source_p->name,
-				     source_p->username, source_p->host, chptr->chname);
+		send_channel_join(chptr, source_p);
 		sendto_channel_local(ALL_MEMBERS, chptr, ":%s MODE %s +a %s",
 				     me.name, chptr->chname, source_p->name);
 
@@ -116,9 +114,7 @@ mo_ojoin(struct Client *client_p, struct Client *source_p, int parc, const char 
 		sendto_server(client_p, chptr, CAP_TS6, NOCAPS,
 			      ":%s SJOIN %ld %s + :@%s",
 			      me.id, (long) chptr->channelts, chptr->chname, source_p->id);
-		sendto_channel_local(ALL_MEMBERS, chptr, ":%s!%s@%s JOIN %s",
-				     source_p->name,
-				     source_p->username, source_p->host, chptr->chname);
+		send_channel_join(chptr, source_p);
 		sendto_channel_local(ALL_MEMBERS, chptr, ":%s MODE %s +o %s",
 				     me.name, chptr->chname, source_p->name);
 
@@ -129,9 +125,7 @@ mo_ojoin(struct Client *client_p, struct Client *source_p, int parc, const char 
 		sendto_server(client_p, chptr, CAP_TS6, NOCAPS,
 			      ":%s SJOIN %ld %s + :%s%s",
 			      me.id, (long) chptr->channelts, chptr->chname, "%", source_p->id);
-		sendto_channel_local(ALL_MEMBERS, chptr, ":%s!%s@%s JOIN %s",
-				     source_p->name,
-				     source_p->username, source_p->host, chptr->chname);
+		send_channel_join(chptr, source_p);
 		sendto_channel_local(ALL_MEMBERS, chptr, ":%s MODE %s +h %s",
 				     me.name, chptr->chname, source_p->name);
 	}
