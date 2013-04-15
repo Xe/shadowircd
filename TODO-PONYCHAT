@@ -55,8 +55,6 @@ USER
  [-] Add extended-join client capability to add account name and ircname
      to JOIN.  See doc/extended-join.txt.
 
- [ ] Disallow wildcarded nicknames in "hunted" parameters like /stats and /motd.
-
  [*] Disallow mIRC italics in channel names when disable_fake_channels.
 
  [*] Add AUTHENTICATE EXTERNAL support, allows SASL authentication
@@ -94,7 +92,7 @@ CONFIG
  [*] Add support for IPv6 DNSBLs. A new "type" option specifies the IP
      version(s) for which each DNSBL should be checked.
 
- [ ] Make flood control settings configurable by those who know exactly
+ [*] Make flood control settings configurable by those who know exactly
      what they are doing.
 
  [ ] Add serverinfo::nicklen config option to limit the nick length
