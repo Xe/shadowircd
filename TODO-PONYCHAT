@@ -77,7 +77,7 @@ USER
 
 OPER
 
- [ ] Add operspy for /list.
+ [*] Add operspy for /list.
 
  [*] Add /stats C to show information about dynamically loaded server
      capabilities.
