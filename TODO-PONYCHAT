@@ -17,7 +17,7 @@ SERVER PROTOCOL
  [*] Allow RSFNC (forced nick change from services) to change a
      nickname's capitalization only.
 
- [ ] Add ENCAP TGINFO to propagate IP addresses that exceeded target
+ [-] Add ENCAP TGINFO to propagate IP addresses that exceeded target
      change limits (these get a lower limit when they reconnect). The
      message's source is the user that exceeded the limit and one
      parameter "0" is required.
