@@ -577,6 +577,7 @@ extern void check_klines_event(void *unused);
 extern void check_klines(void);
 extern void check_dlines(void);
 extern void check_xlines(void);
+extern void resv_nick_fnc(const char *mask, const char *reason, int temp_time); 
 
 extern const char *get_client_name(struct Client *client, int show_ip);
 extern const char *log_client_name(struct Client *, int);
@@ -589,8 +590,6 @@ extern void free_client(struct Client *client);
 extern int exit_client(struct Client *, struct Client *, struct Client *, const char *);
 
 extern void error_exit_client(struct Client *, int);
-
-
 
 extern void count_local_client_memory(size_t * count, size_t * memory);
 extern void count_remote_client_memory(size_t * count, size_t * memory);
