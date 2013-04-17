@@ -105,7 +105,7 @@ CONFIG
      the client sends data. This depends on kernel support. It may
      break BOPM checking.
 
- [ ] Add general::resv_fnc to forcibly change nicks of local users that
+ [*] Add general::resv_fnc to forcibly change nicks of local users that
      match a newly set nick RESV, default enabled.
 
  [*] Add extb_usermode extension, $m:+-<modes> extban matching against
