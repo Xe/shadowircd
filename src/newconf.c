@@ -2338,6 +2338,7 @@ static struct ConfEntry conf_general_table[] =
 	{ "client_flood_message_time",  CF_INT,   NULL, 0, &ConfigFileEntry.client_flood_message_time  }, 
 	{ "expire_override_time",	CF_TIME, NULL, 0, &ConfigFileEntry.expire_override_time},
 	{ "max_ratelimit_tokens",  CF_INT,   NULL, 0, &ConfigFileEntry.max_ratelimit_tokens  },
+	{ "away_interval",    CF_INT,   NULL, 0, &ConfigFileEntry.away_interval    }, 
 	{ "\0", 		0, 	  NULL, 0, NULL }
 };
 

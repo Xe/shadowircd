@@ -756,6 +756,7 @@ set_default_conf(void)
 	ConfigFileEntry.use_propagated_bans = YES;
 	ConfigFileEntry.secret_channels_in_whois = NO;
 	ConfigFileEntry.max_ratelimit_tokens = 30;
+	ConfigFileEntry.away_interval = 30; 
 
 #ifdef HAVE_LIBZ
 	ConfigFileEntry.compression_level = 4;

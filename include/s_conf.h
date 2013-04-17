@@ -236,8 +236,9 @@ struct config_file_entry
 	int client_flood_burst_max; 
 	int client_flood_message_time;
 	int client_flood_message_num; 
-	
 	int max_ratelimit_tokens;
+	int away_interval;
+	
 	int secret_channels_in_whois;
 	int expire_override_time;
 };

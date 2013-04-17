@@ -36,7 +36,6 @@
 #include "s_serv.h"
 #include "packet.h"
 
-
 static int m_away(struct Client *, struct Client *, int, const char **);
 
 struct Message away_msgtab = {
@@ -68,7 +67,8 @@ DECLARE_MODULE_AV1(away, NULL, NULL, away_clist, NULL, NULL, "$Revision: 3370 $"
 static int
 m_away(struct Client *client_p, struct Client *source_p, int parc, const char *parv[])
 {
-	if(MyClient(source_p) && !IsFloodDone(source_p))
+	if(MyClient(source_p) && source_p->localClient->next_away &&
+			!IsFloodDone(source_p)) 
 		flood_endgrace(source_p);
 
 	if(!IsClient(source_p))
@@ -87,6 +87,24 @@ m_away(struct Client *client_p, struct Client *source_p, int parc, const char *p
 		if(MyConnect(source_p))
 			sendto_one_numeric(source_p, RPL_UNAWAY, form_str(RPL_UNAWAY));
 		return 0;
+	}
+	
+	/* Rate limit this because it is sent to common channels. */
+	if (MyClient(source_p)) 
+	{
+		if(!IsOper(source_p) &&
+				source_p->localClient->next_away > rb_current_time())
+		{
+			sendto_one(source_p, form_str(RPL_LOAD2HI),
+					me.name, source_p->name, "AWAY");
+			return;
+		}
+		if(source_p->localClient->next_away < rb_current_time() -
+				ConfigFileEntry.away_interval)
+			source_p->localClient->next_away = rb_current_time();
+		else
+			source_p->localClient->next_away = rb_current_time() +
+				ConfigFileEntry.away_interval; 
 	}
 
 	if(source_p->user->away == NULL)
