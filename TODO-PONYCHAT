@@ -44,7 +44,7 @@ USER
      quiets, D:lines and K:lines against it. Note that ban exceptions
      and auth{} blocks are not checked.
 
- [ ] Send ERR_TOOMANYCHANNELS for each channel join that fails due to
+ [*] Send ERR_TOOMANYCHANNELS for each channel join that fails due to
      channel limits, instead of one per JOIN command.
 
  [-] Add account-notify client capability to notify clients about logins
