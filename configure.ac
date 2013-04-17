@@ -932,6 +932,29 @@ AC_HELP_STRING([--with-topiclen=NUMBER],[Set the max topic length to NUMBER (def
 AC_DEFINE_UNQUOTED(TOPICLEN, ${TOPICLEN}, [Maximum topic length (<=390)])
 AC_DEFINE_UNQUOTED(NICKLEN, (${NICKLEN}+1), [Nickname length])
 
+dnl ***********************
+dnl Branding
+
+AC_MSG_CHECKING([whether custom branding is requested])
+AC_ARG_WITH(custom-branding,
+   AC_HELP_STRING([--with-custom-branding=NAME], [Custom branding name.]),
+   [BRANDING_NAME=$withval
+    AC_MSG_RESULT([yes])],
+   [BRANDING_NAME=$PACKAGE_NAME
+    AC_MSG_RESULT([no])] )
+
+AC_MSG_CHECKING([whether a custom version is requested])
+AC_ARG_WITH(custom-version,
+   AC_HELP_STRING([--with-custom-version=NAME], [Custom branding version.]),
+   [BRANDING_VERSION=$withval
+    AC_MSG_RESULT([yes])],
+   [BRANDING_VERSION=$PACKAGE_VERSION
+    AC_MSG_RESULT([no])] )
+
+AC_DEFINE_UNQUOTED(BRANDING_NAME, ["$BRANDING_NAME"], [Custom branding name.])
+AC_DEFINE_UNQUOTED(BRANDING_VERSION, ["$BRANDING_VERSION"],
+                   [Custom branding version])
+
 shared_modules="yes"
 dnl Some first-stage sanity checks.
 if test "$shared_modules" = yes; then
@@ -1228,7 +1251,7 @@ else
 fi
 
 echo "
-Configuration:
+Configuration of ${BRANDING_NAME}-${BRANDING_VERSION}:
 	Install directory  : $prefix
 
 	Ziplinks           : $zlib
@@ -1240,5 +1263,5 @@ Configuration:
 	Nickname length    : $NICKLEN
 	Topic length       : $TOPICLEN
 
-Use (g)make to compile ShadowIRCd, then (g)make install to install it.
+Use (g)make to compile $BRANDING_NAME, then (g)make install to install it.
 "

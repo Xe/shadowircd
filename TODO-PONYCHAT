@@ -119,7 +119,7 @@ CONFIG
 
 MISC
 
- [ ] Add --with-custom-branding and --with-custom-version configure
+ [*] Add --with-custom-branding and --with-custom-version configure
      options to help forks/patchsets distinguish themselves.
 
  [*] Ensure SIGHUP and SIGINT keep working after a SIGINT restart.

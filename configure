@@ -750,6 +750,8 @@ enable_balloc
 enable_small_net
 with_nicklen
 with_topiclen
+with_custom_branding
+with_custom_version
 enable_warnings
 '
       ac_precious_vars='build_alias
@@ -1405,6 +1407,10 @@ Optional Packages:
   --with-nicklen=LENGTH   Set the nick length to LENGTH (default 31, max 50)
   --with-topiclen=NUMBER  Set the max topic length to NUMBER (default 390, max
                           390)
+  --with-custom-branding=NAME
+                          Custom branding name.
+  --with-custom-version=NAME
+                          Custom branding version.
 
 Some influential environment variables:
   CC          C compiler command
@@ -8012,6 +8018,48 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether custom branding is requested" >&5
+$as_echo_n "checking whether custom branding is requested... " >&6; }
+
+# Check whether --with-custom-branding was given.
+if test "${with_custom_branding+set}" = set; then :
+  withval=$with_custom_branding; BRANDING_NAME=$withval
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  BRANDING_NAME=$PACKAGE_NAME
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether a custom version is requested" >&5
+$as_echo_n "checking whether a custom version is requested... " >&6; }
+
+# Check whether --with-custom-version was given.
+if test "${with_custom_version+set}" = set; then :
+  withval=$with_custom_version; BRANDING_VERSION=$withval
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  BRANDING_VERSION=$PACKAGE_VERSION
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define BRANDING_NAME "$BRANDING_NAME"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define BRANDING_VERSION "$BRANDING_VERSION"
+_ACEOF
+
+
 shared_modules="yes"
 if test "$shared_modules" = yes; then
 		if test "$CC" = tcc -a "$TenDRA" = "no"; then
@@ -11054,7 +11102,7 @@ else
 fi
 
 echo "
-Configuration:
+Configuration of ${BRANDING_NAME}-${BRANDING_VERSION}:
 	Install directory  : $prefix
 
 	Ziplinks           : $zlib
@@ -11066,5 +11114,5 @@ Configuration:
 	Nickname length    : $NICKLEN
 	Topic length       : $TOPICLEN
 
-Use (g)make to compile ShadowIRCd, then (g)make install to install it.
+Use (g)make to compile $BRANDING_NAME, then (g)make install to install it.
 "
