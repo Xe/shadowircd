@@ -270,6 +270,7 @@ me_nickdelay(struct Client *client_p, struct Client *source_p, int parc, const c
 		sendto_realops_snomask(SNO_GENERAL, L_ALL, 
 			"Non-service server %s attempting to execute services-only command NICKDELAY", source_p->name);
 		return 0;
+	}
 
 	duration = atoi(parv[1]);
 	if (duration <= 0)
