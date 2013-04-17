@@ -843,6 +843,9 @@ msg_client(int p_or_n, const char *command,
 			{
 				sendto_one(source_p, form_str(ERR_TARGCHANGE),
 					   me.name, source_p->name, target_p->name);
+				sendto_realops_snomask(SNO_GENERAL, L_ALL, 
+						"User %s changing targets too fast %s, %s",
+						me.name, source_p->name, target_p->name);
 				return;
 			}
 		}

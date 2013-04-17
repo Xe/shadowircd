@@ -82,7 +82,7 @@ OPER
  [*] Add /stats C to show information about dynamically loaded server
      capabilities.
 
- [ ] Add a server notice to snomask +b if a user exceeds target change limits.
+ [-] Add a server notice to snomask +b if a user exceeds target change limits.
 
  [*] Add missing server notice for kills from RSFNC and SVSLOGIN.
  
