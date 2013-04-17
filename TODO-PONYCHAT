@@ -72,7 +72,7 @@ USER
 
  [*] Rate limit high-bandwidth commands, in particular /who <channel>.
 
- [ ] Rate limit /away to help avoid flooding via away-notify.
+ [*] Rate limit /away to help avoid flooding via away-notify.
 
 
 OPER
@@ -84,7 +84,7 @@ OPER
 
  [ ] Add a server notice to snomask +b if a user exceeds target change limits.
 
- [ ] Add missing server notice for kills from RSFNC and SVSLOGIN.
+ [*] Add missing server notice for kills from RSFNC and SVSLOGIN.
 
 
 CONFIG
