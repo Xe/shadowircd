@@ -37,7 +37,7 @@ USER
  [*] Channel mode +c (and other places that disallow colour codes)
      now also strip ASCII 4 (a different kind of colour code).
 
- [ ] Add an error message (numeric 743) if a ban mask is invalid.
+ [*] Add an error message (numeric 743) if a ban mask is invalid.
 
  [*] Extract the underlying IPv4 address from 6to4 and Teredo IPv6
      addresses.  Show it in a remote /whois and check channel bans,
