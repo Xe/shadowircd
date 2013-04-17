@@ -99,7 +99,7 @@ CONFIG
      for local users. Different values of this option do not break the
      server protocol.
 
- [ ] Add general::away_interval to allow configuring /away rate limiting.
+ [*] Add general::away_interval to allow configuring /away rate limiting.
 
  [ ] Add listener::defer_accept to delay accepting a connection until
      the client sends data. This depends on kernel support. It may
