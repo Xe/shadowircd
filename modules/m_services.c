@@ -92,8 +92,12 @@ me_su(struct Client *client_p, struct Client *source_p,
 {
 	struct Client *target_p;
 
-	if(!(source_p->flags & FLAGS_SERVICE))
+	if(!(source_p->flags & FLAGS_SERVICE)) 
+	{
+		sendto_realops_snomask(SNO_GENERAL, L_ALL, 
+			"Non-service server %s attempting to execute services-only command SU", source_p->name); 
 		return 0;
+	}
 
 	if((target_p = find_client(parv[1])) == NULL)
 		return 0;
@@ -156,8 +160,12 @@ me_rsfnc(struct Client *client_p, struct Client *source_p,
 	time_t newts, curts;
 	char note[NICKLEN + 10];
 
-	if(!(source_p->flags & FLAGS_SERVICE))
+	if(!(source_p->flags & FLAGS_SERVICE)) 
+	{
+		sendto_realops_snomask(SNO_GENERAL, L_ALL, 
+			"Non-service server %s attempting to execute services-only command RSFNC", source_p->name); 
 		return 0;
+	}
 
 	if((target_p = find_person(parv[1])) == NULL)
 		return 0;
@@ -254,6 +262,9 @@ me_nickdelay(struct Client *client_p, struct Client *source_p, int parc, const c
 	struct nd_entry *nd;
 
 	if(!(source_p->flags & FLAGS_SERVICE))
+	{ 
+		sendto_realops_snomask(SNO_GENERAL, L_ALL, 
+			"Non-service server %s attempting to execute services-only command NICKDELAY", source_p->name);
 		return 0;
 
 	duration = atoi(parv[1]);

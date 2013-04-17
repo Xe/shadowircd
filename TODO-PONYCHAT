@@ -120,7 +120,7 @@ MISC
  [ ] Add --with-custom-branding and --with-custom-version configure
      options to help forks/patchsets distinguish themselves.
 
- [ ] Ensure SIGHUP and SIGINT keep working after a SIGINT restart.
+ [*] Ensure SIGHUP and SIGINT keep working after a SIGINT restart.
 
  [*] Remove broken GnuTLS support. SSL/TLS is now only provided using
      OpenSSL.
