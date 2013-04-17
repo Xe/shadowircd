@@ -14,7 +14,7 @@ SERVER PROTOCOL
      ircd-seven. Local use of this is controlled by the
      channel::use_forward config option.
 
- [-] Allow RSFNC (forced nick change from services) to change a
+ [*] Allow RSFNC (forced nick change from services) to change a
      nickname's capitalization only.
 
  [ ] Add ENCAP TGINFO to propagate IP addresses that exceeded target
@@ -50,7 +50,7 @@ USER
  [-] Add account-notify client capability to notify clients about logins
      and logouts of users in common channels. See doc/account-notify.txt.
 
- [ ] Add away-notify client capability. See doc/away-notify.txt.
+ [*] Add away-notify client capability. See doc/away-notify.txt.
 
  [-] Add extended-join client capability to add account name and ircname
      to JOIN.  See doc/extended-join.txt.

@@ -1006,7 +1006,12 @@ chm_ban(struct Client *source_p, struct Channel *chptr,
 	 * name etc.
 	 */
 	if(strlen(mask) > IRCD_MIN(BANLEN, MODEBUFLEN - 5))
+	{
+		sendto_one_numeric(source_p, ERR_INVALIDBAN, 
+			form_str(ERR_INVALIDBAN), 
+			chptr->chname, c, raw_mask); 
 		return;
+	}
 
 	/* if we're adding a NEW id */
 	if(dir == MODE_ADD)
@@ -1014,8 +1019,39 @@ chm_ban(struct Client *source_p, struct Channel *chptr,
 		if (*mask == '$' && MyClient(source_p))
 		{
 			if (!valid_extban(mask, source_p, chptr, mode_type))
-				/* XXX perhaps return an error message here */
+			{
+				sendto_one_numeric(source_p, ERR_INVALIDBAN, 
+					form_str(ERR_INVALIDBAN), 
+					chptr->chname, c, raw_mask); 
 				return;
+			}
+		}
+		
+		/* For compatibility, only check the forward channel from
+		 * 
+		 */
+		
+		if(forward != NULL && MyClient(source_p)) 
+		{
+			/* For simplicity and future flexibility, do not 
+			 * allow '$' in forwarding targets. 
+			 */
+			if(!ConfigChannel.use_forward ||
+				strchr(forward, '$') != NULL) 
+			{
+				sendto_one_numeric(source_p, ERR_INVALIDBAN, 
+					form_str(ERR_INVALIDBAN), 
+					chptr->chname, c, raw_mask); 
+				return;
+			}
+			/* Forwards only make sense for bans. */ 
+			if(mode_type != CHFL_BAN) 
+			{
+				sendto_one_numeric(source_p, ERR_INVALIDBAN, 
+					form_str(ERR_INVALIDBAN),
+					chptr->chname, c, raw_mask); 
+				return;
+			}
 		}
 
 		/* dont allow local clients to overflow the banlist, dont
