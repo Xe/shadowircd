@@ -408,6 +408,7 @@ struct ListClient
 #define FLAGS_SERVICE	   0x200000	/* network service */
 #define FLAGS_TGCHANGE     0x400000	/* we're allowed to clear something */
 #define FLAGS_DYNSPOOF     0x800000	/* dynamic spoof, only opers see ip */
+#define FLAGS_TGEXCESSIVE  0x1000000	/* whether the client has attemped to change targets excessively fast */
 
 /* flags for local clients, this needs stuff moved from above to here at some point */
 #define LFLAGS_SSL		0x00000001
@@ -489,10 +490,13 @@ struct ListClient
 #define IsTGChange(x)		((x)->flags & FLAGS_TGCHANGE)
 #define SetTGChange(x)		((x)->flags |= FLAGS_TGCHANGE)
 #define ClearTGChange(x)	((x)->flags &= ~FLAGS_TGCHANGE)
+#define IsTGExcessive(x)	((x)->flags & FLAGS_TGEXCESSIVE)
+#define SetTGExcessive(x)	((x)->flags |= FLAGS_TGEXCESSIVE)
+
 #define IsDynSpoof(x)		((x)->flags & FLAGS_DYNSPOOF)
 #define SetDynSpoof(x)		((x)->flags |= FLAGS_DYNSPOOF)
 #define ClearDynSpoof(x)	((x)->flags &= ~FLAGS_DYNSPOOF)
-
+#define ClearTGExcessive(x)	((x)->flags &= ~FLAGS_TGEXCESSIVE)
 /* local flags */
 
 #define IsSSL(x)		((x)->localClient->localflags & LFLAGS_SSL)
