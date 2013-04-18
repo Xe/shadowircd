@@ -74,6 +74,8 @@ USER
 
  [*] Rate limit /away to help avoid flooding via away-notify.
 
+ [*] Reject nicks with '~' in them, rather than cutting at the first '~'
+
 
 OPER
 
