@@ -3,7 +3,7 @@ server.
 
 EXTBAN - DESCRIPTION
 ------------------------------------------------------------------------
-     $o         Oper extban. Affects all operators.
+     $o[:priv]  Oper extban. Affects all operators.
      $z         SSL extban. Affects all users connected via SSL.
      $a[:mask]  Account extban. Affects anyone with an account that
                 matches. If the mask is omitted, it affects everyone
