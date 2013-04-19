@@ -636,6 +636,7 @@ msg_channel(int p_or_n, const char *command,
  *
  * XXX - We need to rework this a bit, it's a tad ugly. --nenolod
  */
+void
 msg_channel_opmod(int p_or_n, const char *command,
 		  struct Client *client_p, struct Client *source_p,
 		  struct Channel *chptr, const char *text)

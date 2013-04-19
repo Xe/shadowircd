@@ -91,7 +91,7 @@ capability_orphan(struct CapabilityIndex *index, const char *cap)
 
 	s_assert(index != NULL);
 	if (cap == NULL);
-		return 0;
+		return;
 
 	entry = irc_dictionary_retrieve(index->cap_dict, cap);
 	if (entry != NULL)
