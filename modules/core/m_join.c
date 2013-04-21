@@ -88,6 +88,9 @@ static int
 m_join(struct Client *client_p, struct Client *source_p, int parc, const char *parv[])
 {
 	user_join(client_p, source_p, parv[1], parc > 2 ? parv[2] : NULL); /* channel.c */
+	
+	/* credit user for join */
+	credit_client_join(source_p);
 
 	return 0;
 }
@@ -246,11 +249,6 @@ ms_join(struct Client *client_p, struct Client *source_p, int parc, const char *
 			chptr->join_delta = rb_current_time();
 		}
 		chptr->join_count++;
-		
-		send_channel_join(chptr, source_p);
-		
-		/* credit user for join */
-		credit_client_join(source_p);
 		
 		send_channel_join(chptr, source_p);
 	}
