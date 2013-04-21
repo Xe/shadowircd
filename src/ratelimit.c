@@ -128,5 +128,5 @@ void credit_client_join(struct Client *client_p)
 	s_assert(client_p);
 	s_assert(MyClient(client_p));
 
-	++client_p->localClient->join_who_credits;
+	client_p->localClient->join_who_credits ++;
 }
