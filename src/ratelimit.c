@@ -130,3 +130,4 @@ void credit_client_join(struct Client *client_p)
 
 	++client_p->localClient->join_who_credits;
 }
+
