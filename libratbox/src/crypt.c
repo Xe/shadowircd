@@ -33,7 +33,7 @@
  */
 
 #ifdef __APPLE__
-	#include <CoreFoundation/CoreFoundation.h>
+	#include <CoreFoundation/CFByteOrder.h>
 	#define htole32(x) CFSwapInt32HostToLittle(x)
 	#define le32toh(x) CFSwapInt32LittleToHost(x)
 #endif
