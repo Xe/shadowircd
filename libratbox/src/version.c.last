@@ -27,9 +27,9 @@
 #include "../include/serno.h"
 
 const char *libratbox_generation = "1";
-const char *libratbox_platform = "Linux fluttershy 3.5.0-26-generic #42-Ubuntu SMP Fri Mar 8 23:18:20 UTC 2013 x86_64 x86_64 x86_64 GNU/Linux";
+const char *libratbox_platform = "Linux fluttershy 3.2.0-4-amd64 #1 SMP Debian 3.2.35-2 x86_64 GNU/Linux";
 const char *libratbox_serno = SERIALNUM;
-const char *libratbox_creation = "Sun Apr 14 2013 at 17:14:31 PDT";
+const char *libratbox_creation = "Wed May 8 2013 at 13:13:31 PDT";
 
 const char *libratbox_infotext[] =
 {
