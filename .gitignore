@@ -22,6 +22,7 @@ libratbox/include/stamp-h1
 libratbox/libratbox.pc
 libratbox/libtool
 libratbox/src/version.c
+libratbox/src/version.c.last
 scripts/*.tbz2
 scripts/*.tgz
 scripts/*.tar.bz2
