@@ -17,7 +17,8 @@ NO PARAMETERS:
               join the channel.
      +r     - Registered users only.  Only users identified to services
               may join.
-     +c     - No color.  All color codes in messages are stripped.
+     +c     - No color.  All markup (color, bold, underline, etc.) in
+              messages is stripped.
      +d     - No nickchanges. People on the channel will not be able to
               change nick.
      +g     - Free invite.  Everyone may invite users.  Significantly
@@ -46,6 +47,7 @@ NO PARAMETERS:
    * +M     - Immune. Opers cannot be kicked from the channel. May
               be set by admins regardless of channel status. Users
               will not see this mode at all. Can only be set by admins.
+              Opers may still be kicked from the channel by services.
   ?* +O     - Oper only channel. Only opers will be able to join.
   ?* +A     - Admin only channel. Only admins will be able to join.
               Can only be set by admins.

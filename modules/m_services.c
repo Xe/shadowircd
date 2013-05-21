@@ -92,8 +92,12 @@ me_su(struct Client *client_p, struct Client *source_p,
 {
 	struct Client *target_p;
 
-	if(!(source_p->flags & FLAGS_SERVICE))
+	if(!(source_p->flags & FLAGS_SERVICE)) 
+	{
+		sendto_realops_snomask(SNO_GENERAL, L_ALL, 
+			"Non-service server %s attempting to execute services-only command SU", source_p->name); 
 		return 0;
+	}
 
 	if((target_p = find_client(parv[1])) == NULL)
 		return 0;
@@ -105,6 +109,10 @@ me_su(struct Client *client_p, struct Client *source_p,
 		target_p->user->suser[0] = '\0';
 	else
 		rb_strlcpy(target_p->user->suser, parv[2], sizeof(target_p->user->suser));
+
+	sendto_common_channels_local_butone(target_p, CLICAP_ACCOUNT_NOTIFY, ":%s!%s@%s ACCOUNT %s",
+					    target_p->name, target_p->username, target_p->host,
+					    EmptyString(target_p->user->suser) ? "*" : target_p->user->suser);
 
 	invalidate_bancache_user(target_p);
 
@@ -152,8 +160,12 @@ me_rsfnc(struct Client *client_p, struct Client *source_p,
 	time_t newts, curts;
 	char note[NICKLEN + 10];
 
-	if(!(source_p->flags & FLAGS_SERVICE))
+	if(!(source_p->flags & FLAGS_SERVICE)) 
+	{
+		sendto_realops_snomask(SNO_GENERAL, L_ALL, 
+			"Non-service server %s attempting to execute services-only command RSFNC", source_p->name); 
 		return 0;
+	}
 
 	if((target_p = find_person(parv[1])) == NULL)
 		return 0;
@@ -182,7 +194,7 @@ me_rsfnc(struct Client *client_p, struct Client *source_p,
 		 * safety --anfl
 		 */
 		if(target_p == exist_p)
-			return 0;
+			goto doit;
 
 		if(MyClient(exist_p))
 			sendto_one(exist_p, ":%s KILL %s :(Nickname regained by services)",
@@ -190,15 +202,20 @@ me_rsfnc(struct Client *client_p, struct Client *source_p,
 
 		exist_p->flags |= FLAGS_KILLED;
 		/* Do not send kills to servers for unknowns -- jilles */
-		if(IsClient(exist_p))
+		if(IsClient(exist_p)) {
 			kill_client_serv_butone(NULL, exist_p, "%s (Nickname regained by services)",
 						me.name);
+			sendto_realops_snomask(SNO_SKILL, L_ALL,
+				"Nick collision due to services forced nick change on %s", 
+				parv[2]); 
+		}
 
 		rb_snprintf(buf, sizeof(buf), "Killed (%s (Nickname regained by services))",
 			me.name);
 		exit_client(NULL, exist_p, &me, buf);
 	}
 
+doit:
 	newts = atol(parv[3]);
 
 	/* timestamp is older than 15mins, ignore it */
@@ -216,7 +233,7 @@ me_rsfnc(struct Client *client_p, struct Client *source_p,
 			target_p->name, parv[2], target_p->username,
 			target_p->host);
 
-	sendto_common_channels_local(target_p, ":%s!%s@%s NICK :%s",
+	sendto_common_channels_local(target_p, NOCAPS, ":%s!%s@%s NICK :%s",
 				target_p->name, target_p->username,
 				target_p->host, parv[2]);
 
@@ -249,7 +266,11 @@ me_nickdelay(struct Client *client_p, struct Client *source_p, int parc, const c
 	struct nd_entry *nd;
 
 	if(!(source_p->flags & FLAGS_SERVICE))
+	{ 
+		sendto_realops_snomask(SNO_GENERAL, L_ALL, 
+			"Non-service server %s attempting to execute services-only command NICKDELAY", source_p->name);
 		return 0;
+	}
 
 	duration = atoi(parv[1]);
 	if (duration <= 0)

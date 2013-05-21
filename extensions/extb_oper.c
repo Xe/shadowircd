@@ -8,6 +8,8 @@
 #include "modules.h"
 #include "client.h"
 #include "ircd.h"
+#include "privilege.h"
+#include "s_newconf.h" 
 
 static int _modinit(void);
 static void _moddeinit(void);
@@ -35,9 +37,9 @@ static int eb_oper(const char *data, struct Client *client_p,
 
 	(void)chptr;
 	(void)mode_type;
-	/* perhaps use data somehow? (opernick/flags?) */
-	/* so deny any bans with data for now */
+	
 	if (data != NULL)
-		return EXTBAN_INVALID;
-	return IsOper(client_p) ? EXTBAN_MATCH : EXTBAN_NOMATCH;
+		/* $o:admin or whatever */
+		return HasPrivilege(client_p, data) ? EXTBAN_MATCH : EXTBAN_NOMATCH; 
+	return IsOper(client_p) ? EXTBAN_MATCH : EXTBAN_NOMATCH; 
 }

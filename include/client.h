@@ -238,7 +238,7 @@ struct LocalUser
 
 	struct DNSQuery *dnsquery; /* for outgoing server's name lookup */
 
-	time_t last_away;	/* Away since... */
+	time_t next_away;  /* Don't allow next away before... */ 
 	time_t last;
 
 	/* clients allowed to talk through +g */
@@ -268,6 +268,10 @@ struct LocalUser
 	uint32_t targets[TGCHANGE_NUM + TGCHANGE_REPLY];
 	unsigned int targets_free;	/* free targets */
 	time_t target_last;		/* last time we cleared a slot */
+	
+	/* ratelimit items */
+	time_t ratelimit;
+	unsigned int join_who_credits;
 
 	struct ListClient *safelist_data;
 
@@ -404,6 +408,7 @@ struct ListClient
 #define FLAGS_SERVICE	   0x200000	/* network service */
 #define FLAGS_TGCHANGE     0x400000	/* we're allowed to clear something */
 #define FLAGS_DYNSPOOF     0x800000	/* dynamic spoof, only opers see ip */
+#define FLAGS_TGEXCESSIVE  0x1000000	/* whether the client has attemped to change targets excessively fast */
 
 /* flags for local clients, this needs stuff moved from above to here at some point */
 #define LFLAGS_SSL		0x00000001
@@ -451,6 +456,9 @@ struct ListClient
 
 #define CLICAP_MULTI_PREFIX	0x0001
 #define CLICAP_SASL		0x0002
+#define CLICAP_ACCOUNT_NOTIFY	0x0004
+#define CLICAP_EXTENDED_JOIN  0x0008 
+#define CLICAP_AWAY_NOTIFY  0x0010 
 
 /*
  * flags macros.
@@ -482,10 +490,13 @@ struct ListClient
 #define IsTGChange(x)		((x)->flags & FLAGS_TGCHANGE)
 #define SetTGChange(x)		((x)->flags |= FLAGS_TGCHANGE)
 #define ClearTGChange(x)	((x)->flags &= ~FLAGS_TGCHANGE)
+#define IsTGExcessive(x)	((x)->flags & FLAGS_TGEXCESSIVE)
+#define SetTGExcessive(x)	((x)->flags |= FLAGS_TGEXCESSIVE)
+
 #define IsDynSpoof(x)		((x)->flags & FLAGS_DYNSPOOF)
 #define SetDynSpoof(x)		((x)->flags |= FLAGS_DYNSPOOF)
 #define ClearDynSpoof(x)	((x)->flags &= ~FLAGS_DYNSPOOF)
-
+#define ClearTGExcessive(x)	((x)->flags &= ~FLAGS_TGEXCESSIVE)
 /* local flags */
 
 #define IsSSL(x)		((x)->localClient->localflags & LFLAGS_SSL)
@@ -571,6 +582,7 @@ extern void check_klines_event(void *unused);
 extern void check_klines(void);
 extern void check_dlines(void);
 extern void check_xlines(void);
+extern void resv_nick_fnc(const char *mask, const char *reason, int temp_time); 
 
 extern const char *get_client_name(struct Client *client, int show_ip);
 extern const char *log_client_name(struct Client *, int);
@@ -583,8 +595,6 @@ extern void free_client(struct Client *client);
 extern int exit_client(struct Client *, struct Client *, struct Client *, const char *);
 
 extern void error_exit_client(struct Client *, int);
-
-
 
 extern void count_local_client_memory(size_t * count, size_t * memory);
 extern void count_remote_client_memory(size_t * count, size_t * memory);

@@ -119,6 +119,8 @@ static void stats_servlinks(struct Client *);
 static void stats_ltrace(struct Client *, int, const char **);
 static void stats_ziplinks(struct Client *);
 static void stats_comm(struct Client *);
+static void stats_capability(struct Client *); 
+
 /* This table contains the possible stats items, in order:
  * stats letter,  function to call, operonly? adminonly?
  * case only matters in the stats letter column.. -- fl_
@@ -130,7 +132,7 @@ static struct StatsStruct stats_cmd_table[] = {
 	{'b', stats_delay,		1, 1, },
 	{'B', stats_hash,		1, 1, },
 	{'c', stats_connect,		0, 0, },
-	{'C', stats_connect,		0, 0, },
+	{'C', stats_capability,		1, 1, },
 	{'d', stats_tdeny,		1, 0, },
 	{'D', stats_deny,		1, 0, },
 	{'e', stats_exempt,		1, 0, },
@@ -706,6 +708,20 @@ stats_oper(struct Client *source_p)
 }
 
 static void
+stats_capability_walk(const char *line, void *data)
+{
+	struct Client *client_p = data;
+
+	sendto_one_numeric(client_p, RPL_STATSDEBUG, "C :%s", line);
+}
+
+static void
+stats_capability(struct Client *client_p)
+{
+	capability_index_stats(stats_capability_walk, client_p);
+}
+
+static void
 stats_privset(struct Client *source_p)
 {
 	privilegeset_report(source_p);
@@ -927,6 +943,8 @@ stats_tstats (struct Client *source_p)
 	sendto_one_numeric(source_p, RPL_STATSDEBUG,
 			   "T :tgchange blocked msgs %u restricted addrs %lu",
 			   sp.is_tgch, rb_dlink_list_length(&tgchange_list));
+	sendto_one_numeric(source_p, RPL_STATSDEBUG,
+			   "T :ratelimit blocked commands %u", sp.is_rl);
 	sendto_one_numeric(source_p, RPL_STATSDEBUG,
 			   "T :auth successes %u fails %u",
 			   sp.is_asuc, sp.is_abad);

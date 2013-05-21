@@ -46,6 +46,7 @@ SRCS =                          \
   extb_canjoin.c		\
   extb_channel.c		\
   extb_oper.c			\
+  extb_usermode.c		\
   extb_server.c			\
   extb_ssl.c			\
   extb_realname.c		\
@@ -57,6 +58,7 @@ SRCS =                          \
   sno_globalkline.c		\
   sno_globaloper.c		\
   sno_whois.c			\
+  restrict-unauthenticated.c    \
   m_42.c			\
   m_adminwall.c			\
   m_cycle.c			\
@@ -66,7 +68,6 @@ SRCS =                          \
   m_mkpasswd.c                  \
   m_oaccept.c			\
   m_ojoin.c			\
-  m_olist.c			\
   m_okick.c			\
   m_omode.c			\
   m_opme.c			\

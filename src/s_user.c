@@ -452,7 +452,7 @@ register_local_user(struct Client *client_p, struct Client *source_p, const char
 					source_p->sockhost, source_p->preClient->dnsbl_listed->host);
 			source_p->preClient->dnsbl_listed->hits++;
 
-			sendto_realops_snomask(SNO_REJ, L_ALL,
+			sendto_realops_snomask(SNO_GENERAL, L_ALL,
 					"%s (%s@%s) is being disconnected due to being listed in DNS Blacklist %s",
 					source_p->name, source_p->username, source_p->sockhost, source_p->preClient->dnsbl_listed->host);
 
@@ -1524,7 +1524,7 @@ change_nick_user_host(struct Client *target_p,	const char *nick, const char *use
 		vsnprintf(reason, 255, format, ap);
 		va_end(ap);
 
-		sendto_common_channels_local_butone(target_p, ":%s!%s@%s QUIT :%s",
+		sendto_common_channels_local_butone(target_p, NOCAPS, ":%s!%s@%s QUIT :%s",
 				target_p->name, target_p->username, target_p->host,
 				reason);
 
@@ -1573,6 +1573,12 @@ change_nick_user_host(struct Client *target_p,	const char *nick, const char *use
 
 			*modeval = '\0';
 		}
+		
+		/* Resend away message to away-notify enabled clients. */ 
+		if (target_p->user->away) 
+			sendto_common_channels_local_butone(target_p, CLICAP_AWAY_NOTIFY, ":%s!%s@%s AWAY :%s",
+				target_p->name, target_p->username, target_p->host, 
+				target_p->user->away); 
 
 		if(MyClient(target_p) && changed_case)
 			sendto_one(target_p, ":%s!%s@%s NICK %s",
@@ -1580,7 +1586,7 @@ change_nick_user_host(struct Client *target_p,	const char *nick, const char *use
 	}
 	else if(changed_case)
 	{
-		sendto_common_channels_local(target_p, ":%s!%s@%s NICK :%s",
+		sendto_common_channels_local(target_p, NOCAPS, ":%s!%s@%s NICK :%s",
 				target_p->name, target_p->username,
 				target_p->host, nick);
 	}

@@ -25,7 +25,7 @@
 
 #include <libratbox_config.h>
 #include <ratbox_lib.h>
-#if !defined(HAVE_OPENSSL) && !defined(HAVE_GNUTLS)
+#if !defined(HAVE_OPENSSL)
 
 #include "arc4random.h"
 
@@ -48,7 +48,7 @@ rb_init_ssl(void)
 }
 
 int
-rb_ssl_listen(rb_fde_t *F, int backlog)
+rb_ssl_listen(rb_fde_t *F, int backlog, int defer_accept)
 {
 	errno = ENOSYS;
 	return -1;

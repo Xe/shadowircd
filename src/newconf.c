@@ -31,6 +31,8 @@
 
 #define CF_TYPE(x) ((x) & CF_MTYPE)
 
+static int yy_defer_accept = 1;
+
 struct TopConf *conf_cur_block;
 static char *conf_cur_block_name;
 
@@ -53,6 +55,9 @@ static struct alias_entry *yy_alias = NULL;
 
 static char *yy_blacklist_host = NULL;
 static char *yy_blacklist_reason = NULL;
+static int yy_blacklist_ipv4 = 1;
+static int yy_blacklist_ipv6 = 0; 
+
 static char *yy_privset_extends = NULL;
 
 static const char *
@@ -871,7 +876,11 @@ conf_end_listen(struct TopConf *tc)
 	return 0;
 }
 
-
+static void
+conf_set_listen_defer_accept(void *data)
+{
+	yy_defer_accept = *(unsigned int *) data;
+}
 
 static void
 conf_set_listen_port_both(void *data, int ssl)
@@ -887,9 +896,9 @@ conf_set_listen_port_both(void *data, int ssl)
 		}
                 if(listener_address == NULL)
                 {
-			add_listener(args->v.number, listener_address, AF_INET, ssl);
+			add_listener(args->v.number, listener_address, AF_INET, ssl, yy_defer_accept);
 #ifdef RB_IPV6
-			add_listener(args->v.number, listener_address, AF_INET6, ssl);
+			add_listener(args->v.number, listener_address, AF_INET6, ssl, yy_defer_accept);
 #endif
                 }
 		else
@@ -902,7 +911,7 @@ conf_set_listen_port_both(void *data, int ssl)
 #endif
 				family = AF_INET;
 		
-			add_listener(args->v.number, listener_address, family, ssl);
+			add_listener(args->v.number, listener_address, family, ssl, yy_defer_accept);
                 
                 }
 
@@ -1844,17 +1853,71 @@ conf_set_blacklist_host(void *data)
 }
 
 static void
+conf_set_blacklist_type(void *data)
+{
+	conf_parm_t *args = data;
+
+	/* Don't assume we have either if we got here */
+	yy_blacklist_ipv4 = 0;
+	yy_blacklist_ipv6 = 0;
+
+	for (; args; args = args->next)
+	{
+		if (!strcasecmp(args->v.string, "ipv4"))
+			yy_blacklist_ipv4 = 1;
+		else if (!strcasecmp(args->v.string, "ipv6"))
+			yy_blacklist_ipv6 = 1;
+		else
+			conf_report_error("blacklist::type has unknown address family %s",
+						args->v.string);
+	}
+
+	/* If we have neither, just default to IPv4 */
+	if (!yy_blacklist_ipv4 && !yy_blacklist_ipv6)
+	{
+		conf_report_error("blacklist::type has neither IPv4 nor IPv6 (defaulting to IPv4)");
+		yy_blacklist_ipv4 = 1;
+	}
+} 
+
+static void
 conf_set_blacklist_reason(void *data)
 {
 	yy_blacklist_reason = rb_strdup(data);
 
 	if (yy_blacklist_host && yy_blacklist_reason)
 	{
-		new_blacklist(yy_blacklist_host, yy_blacklist_reason);
+		if (yy_blacklist_ipv6)
+		{
+			/* Make sure things fit (64 = alnum count + dots) */
+			if ((64 + strlen(yy_blacklist_host)) > IRCD_RES_HOSTLEN)
+			{
+				conf_report_error("blacklist::host %s results in IPv6 queries that are too long",
+					yy_blacklist_host);
+				goto cleanup_bl;
+			}
+		}
+		/* Avoid doing redundant check, IPv6 is bigger than IPv4 --Elizabeth */
+		if (yy_blacklist_ipv4 && !yy_blacklist_ipv6)
+		{
+			/* Make sure things fit (16 = number of nums + dots) */
+			if ((16 + strlen(yy_blacklist_host)) > IRCD_RES_HOSTLEN)
+			{
+				conf_report_error("blacklist::host %s results in IPv4 queries that are too long",
+					yy_blacklist_host);
+				goto cleanup_bl;
+			}
+		}
+
+		new_blacklist(yy_blacklist_host, yy_blacklist_reason, yy_blacklist_ipv4, yy_blacklist_ipv6);
+
+cleanup_bl:
 		rb_free(yy_blacklist_host);
 		rb_free(yy_blacklist_reason);
 		yy_blacklist_host = NULL;
 		yy_blacklist_reason = NULL;
+		yy_blacklist_ipv4 = 1;
+		yy_blacklist_ipv6 = 0; 
 	}
 }
 
@@ -2228,8 +2291,8 @@ static struct ConfEntry conf_general_table[] =
 	{ "burst_away",		CF_YESNO, NULL, 0, &ConfigFileEntry.burst_away		},
 	{ "caller_id_wait",	CF_TIME,  NULL, 0, &ConfigFileEntry.caller_id_wait	},
 	{ "client_exit",	CF_YESNO, NULL, 0, &ConfigFileEntry.client_exit		},
-	{ "client_flood",	CF_INT,   NULL, 0, &ConfigFileEntry.client_flood	},
 	{ "collision_fnc",	CF_YESNO, NULL, 0, &ConfigFileEntry.collision_fnc	},
+	{ "resv_fnc",    CF_YESNO, NULL, 0, &ConfigFileEntry.resv_fnc    }, 
 	{ "connect_timeout",	CF_TIME,  NULL, 0, &ConfigFileEntry.connect_timeout	},
 	{ "default_floodcount", CF_INT,   NULL, 0, &ConfigFileEntry.default_floodcount	},
 	{ "default_ident_timeout",	CF_INT, NULL, 0, &ConfigFileEntry.default_ident_timeout		},
@@ -2275,7 +2338,14 @@ static struct ConfEntry conf_general_table[] =
 	{ "use_whois_actually", CF_YESNO, NULL, 0, &ConfigFileEntry.use_whois_actually	},
 	{ "warn_no_nline",	CF_YESNO, NULL, 0, &ConfigFileEntry.warn_no_nline	},
 	{ "use_propagated_bans",CF_YESNO, NULL, 0, &ConfigFileEntry.use_propagated_bans	},
+	{ "client_flood_max_lines",  CF_INT,   NULL, 0, &ConfigFileEntry.client_flood_max_lines  },
+	{ "client_flood_burst_rate",  CF_INT,   NULL, 0, &ConfigFileEntry.client_flood_burst_rate  },
+	{ "client_flood_burst_max",  CF_INT,   NULL, 0, &ConfigFileEntry.client_flood_burst_max  },
+	{ "client_flood_message_num",  CF_INT,   NULL, 0, &ConfigFileEntry.client_flood_message_num  },
+	{ "client_flood_message_time",  CF_INT,   NULL, 0, &ConfigFileEntry.client_flood_message_time  }, 
 	{ "expire_override_time",	CF_TIME, NULL, 0, &ConfigFileEntry.expire_override_time},
+	{ "max_ratelimit_tokens",  CF_INT,   NULL, 0, &ConfigFileEntry.max_ratelimit_tokens  },
+	{ "away_interval",    CF_INT,   NULL, 0, &ConfigFileEntry.away_interval    }, 
 	{ "\0", 		0, 	  NULL, 0, NULL }
 };
 
@@ -2343,6 +2413,7 @@ newconf_init()
 	add_top_conf("privset", NULL, NULL, conf_privset_table);
 
 	add_top_conf("listen", conf_begin_listen, conf_end_listen, NULL);
+	add_conf_item("listen", "defer_accept", CF_YESNO, conf_set_listen_defer_accept);
 	add_conf_item("listen", "port", CF_INT | CF_FLIST, conf_set_listen_port);
 	add_conf_item("listen", "sslport", CF_INT | CF_FLIST, conf_set_listen_sslport);
 	add_conf_item("listen", "ip", CF_QSTRING, conf_set_listen_address);
@@ -2376,5 +2447,6 @@ newconf_init()
 
 	add_top_conf("blacklist", NULL, NULL, NULL);
 	add_conf_item("blacklist", "host", CF_QSTRING, conf_set_blacklist_host);
+	add_conf_item("blacklist", "type", CF_STRING | CF_FLIST, conf_set_blacklist_type);
 	add_conf_item("blacklist", "reject_reason", CF_QSTRING, conf_set_blacklist_reason);
 }

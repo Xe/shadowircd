@@ -39,20 +39,21 @@ strip_colour(char *string)
 		switch (*c)
 		{
 		case 3:
-			if(isdigit(c[1]))
+			if(IsDigit(c[1]))
 			{
 				c++;
-				if(isdigit(c[1]))
+				if(IsDigit(c[1]))
 					c++;
-				if(c[1] == ',' && isdigit(c[2]))
+				if(c[1] == ',' && IsDigit(c[2]))
 				{
 					c += 2;
-					if(isdigit(c[1]))
+					if(IsDigit(c[1]))
 						c++;
 				}
 			}
 			break;
 		case 2:
+		case 4:
 		case 6:
 		case 7:
 		case 22:
@@ -90,15 +91,15 @@ strip_unprintable(char *string)
 		switch (*c)
 		{
 		case 3:
-			if(isdigit(c[1]))
+			if(IsDigit(c[1]))
 			{
 				c++;
-				if(isdigit(c[1]))
+				if(IsDigit(c[1]))
 					c++;
-				if(c[1] == ',' && isdigit(c[2]))
+				if(c[1] == ',' && IsDigit(c[2]))
 				{
 					c += 2;
-					if(isdigit(c[1]))
+					if(IsDigit(c[1]))
 						c++;
 				}
 			}

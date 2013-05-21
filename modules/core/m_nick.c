@@ -114,7 +114,6 @@ mr_nick(struct Client *client_p, struct Client *source_p, int parc, const char *
 {
 	struct Client *target_p;
 	char nick[NICKLEN];
-	char *s;
 
 	if (strlen(client_p->id) == 3)
 	{
@@ -122,19 +121,12 @@ mr_nick(struct Client *client_p, struct Client *source_p, int parc, const char *
 		return 0;
 	}
 
-	if(parc < 2 || EmptyString(parv[1]) || (parv[1][0] == '~'))
+	if(parc < 2 || EmptyString(parv[1]))
 	{
 		sendto_one(source_p, form_str(ERR_NONICKNAMEGIVEN),
 			   me.name, EmptyString(source_p->name) ? "*" : source_p->name);
 		return 0;
 	}
-
-	/* due to the scandinavian origins, (~ being uppercase of ^) and ~
-	 * being disallowed as a nick char, we need to chop the first ~
-	 * instead of just erroring.
-	 */
-	if((s = strchr(parv[1], '~')))
-		*s = '\0';
 
 	/* copy the nick and terminate it */
 	rb_strlcpy(nick, parv[1], sizeof(nick));
@@ -180,20 +172,12 @@ m_nick(struct Client *client_p, struct Client *source_p, int parc, const char *p
 {
 	struct Client *target_p;
 	char nick[NICKLEN];
-	char *s;
 
-	if(parc < 2 || EmptyString(parv[1]) || (parv[1][0] == '~'))
+	if(parc < 2 || EmptyString(parv[1]))
 	{
 		sendto_one(source_p, form_str(ERR_NONICKNAMEGIVEN), me.name, source_p->name);
 		return 0;
 	}
-
-	/* due to the scandinavian origins, (~ being uppercase of ^) and ~
-	 * being disallowed as a nick char, we need to chop the first ~
-	 * instead of just erroring.
-	 */
-	if((s = strchr(parv[1], '~')))
-		*s = '\0';
 
 	/* mark end of grace period, to prevent nickflooding */
 	if(!IsFloodDone(source_p))
@@ -737,7 +721,7 @@ change_local_nick(struct Client *client_p, struct Client *source_p,
 			     source_p->name, nick, source_p->username, source_p->host);
 
 	/* send the nick change to the users channels */
-	sendto_common_channels_local(source_p, ":%s!%s@%s NICK :%s",
+	sendto_common_channels_local(source_p, NOCAPS, ":%s!%s@%s NICK :%s",
 				     source_p->name, source_p->username, source_p->host, nick);
 
 	/* send the nick change to servers.. */
@@ -798,7 +782,7 @@ change_remote_nick(struct Client *client_p, struct Client *source_p,
 		monitor_signoff(source_p);
 	}
 
-	sendto_common_channels_local(source_p, ":%s!%s@%s NICK :%s",
+	sendto_common_channels_local(source_p, NOCAPS, ":%s!%s@%s NICK :%s",
 				     source_p->name, source_p->username, source_p->host, nick);
 
 	if(source_p->user)
@@ -1031,8 +1015,8 @@ perform_nickchange_collides(struct Client *source_p, struct Client *client_p,
 			{
 				ServerStats.is_kill++;
 
-				sendto_one_numeric(target_p, ERR_NICKCOLLISION,
-						form_str(ERR_NICKCOLLISION), target_p->name);
+				sendto_one_numeric(source_p, ERR_NICKCOLLISION,
+						form_str(ERR_NICKCOLLISION), source_p->name);
 
 				/* kill the client issuing the nickchange */
 				kill_client_serv_butone(client_p, source_p,

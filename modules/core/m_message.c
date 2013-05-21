@@ -332,8 +332,10 @@ build_target_list(int p_or_n, const char *command, struct Client *client_p,
 		{
 			if(*nick == '@')
 				type |= CHFL_CHANOP;
+			else if(*nick == '%')
+				type |= CHFL_CHANOP | CHFL_HALFOP;
 			else if(*nick == '+')
-				type |= CHFL_CHANOP | CHFL_VOICE;
+				type |= CHFL_CHANOP | CHFL_HALFOP | CHFL_VOICE;
 			else
 				break;
 			nick++;
@@ -634,7 +636,7 @@ msg_channel(int p_or_n, const char *command,
  *
  * XXX - We need to rework this a bit, it's a tad ugly. --nenolod
  */
-static void
+void
 msg_channel_opmod(int p_or_n, const char *command,
 		  struct Client *client_p, struct Client *source_p,
 		  struct Channel *chptr, const char *text)
@@ -653,6 +655,25 @@ msg_channel_opmod(int p_or_n, const char *command,
 			if(p_or_n != NOTICE)
 				sendto_one(source_p, form_str(ERR_NOTEXTTOSEND), me.name, source_p->name);
 			return;
+		}
+	}
+	
+	if (p_or_n != NOTICE && *text == '\001' &&
+		strncasecmp(text + 1, "ACTION ", 7))
+	{
+		if (chptr->mode.mode & MODE_NOCTCP)
+		{
+			sendto_one_numeric(source_p, ERR_CANNOTSENDTOCHAN,
+			form_str(ERR_CANNOTSENDTOCHAN), chptr->chname);
+			return;
+		}
+		else if (rb_dlink_list_length(&chptr->locmembers) > (unsigned)(GlobalSetOptions.floodcount / 2))
+		{
+			/* This overestimates the number of users the CTCP
+			 * is being sent to, so large_ctcp_sent might be
+			 * set inappropriately. This should not be a problem.
+			 */
+			source_p->large_ctcp_sent = rb_current_time();
 		}
 	}
 
@@ -692,6 +713,7 @@ static void
 msg_channel_flags(int p_or_n, const char *command, struct Client *client_p,
 		  struct Client *source_p, struct Channel *chptr, int flags, const char *text)
 {
+	char text2[BUFSIZE]; 
 	int type;
 	char c;
 
@@ -712,6 +734,21 @@ msg_channel_flags(int p_or_n, const char *command, struct Client *client_p,
 		if(p_or_n != NOTICE)
 			source_p->localClient->last = rb_current_time();
 	}
+	
+	if(chptr->mode.mode & MODE_NOCOLOR)
+	{
+		rb_strlcpy(text2, text, BUFSIZE);
+		strip_colour(text2);
+		text = text2;
+		if (EmptyString(text))
+		{
+		/* could be empty after colour stripping and
+		 * that would cause problems later */
+		if(p_or_n != NOTICE)
+			sendto_one(source_p, form_str(ERR_NOTEXTTOSEND), me.name, source_p->name);
+			return;
+		}
+	} 
 
 	sendto_channel_flags(client_p, type, source_p, chptr, "%s %c%s :%s",
 			     command, c, chptr->chname, text);

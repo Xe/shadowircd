@@ -12,7 +12,7 @@ AC_COPYRIGHT([$Id: configure.ac 26260 2008-12-10 04:08:39Z androsyn $])
 AC_INIT([libratbox],[devel])
 AM_INIT_AUTOMAKE(AC_PACKAGE_TARNAME, AC_PACKAGE_VERSION, -)
 
-AM_CONFIG_HEADER(include/libratbox_config.h)
+AC_CONFIG_HEADERS([include/libratbox_config.h])
 
 AC_PREFIX_DEFAULT(/usr/local/libratbox)
 AC_GNU_SOURCE
@@ -105,7 +105,7 @@ AC_TYPE_UID_T
 dnl Checks for header files.
 AC_HEADER_STDC
 
-AC_CHECK_HEADERS([crypt.h unistd.h sys/socket.h sys/stat.h sys/time.h time.h netinet/in.h arpa/inet.h errno.h sys/uio.h spawn.h sys/poll.h sys/epoll.h sys/select.h sys/devpoll.h sys/event.h port.h signal.h sys/signalfd.h sys/timerfd.h])
+AC_CHECK_HEADERS([crypt.h unistd.h sys/socket.h sys/stat.h sys/time.h time.h netinet/in.h arpa/inet.h errno.h sys/uio.h spawn.h sys/poll.h sys/epoll.h sys/select.h sys/devpoll.h sys/event.h port.h signal.h sys/signalfd.h sys/timerfd.h linux/tcp.h])
 AC_HEADER_TIME
 
 dnl Networking Functions
@@ -338,36 +338,9 @@ if test "$cf_enable_openssl" != no; then
 		[cf_enable_openssl=no], [-lcrypto])
 fi
 
-
-
-dnl GnuTLS support
-AC_MSG_CHECKING(for GnuTLS)
-AC_ARG_ENABLE(gnutls,
-[AC_HELP_STRING([--enable-gnutls],[Enable GnuTLS support.])
-AC_HELP_STRING([--disable-gnutls],[Disable GnuTLS support.])],
-[cf_enable_gnutls=$enableval],
-[cf_enable_gnutls="auto"])
- 
-if test "$cf_enable_gnutls" != no; then
-       PKG_CHECK_MODULES(GNUTLS, [gnutls], [
-               cf_enable_gnutls="yes"   
-       ], [cf_enable_gnutls="no"])      
-fi
-
-if test "$cf_enable_gnutls" = "auto" -a "$cf_enable_openssl" = "yes"; then
-       cf_enable_gnutls="no"
-fi
-
 if test x"$cf_enable_openssl" != xno; then
 	AC_DEFINE(HAVE_OPENSSL,1,[Has OpenSSL])
-	GNUTLS_CFLAGS=""
-	GNUTLS_LIBS=""
 	SSL_TYPE="openssl"
-elif test x"$cf_enable_gnutls" != xno; then
-	AC_DEFINE(HAVE_GNUTLS, 1, [Has GnuTLS])
-	SSL_LIBS=""
-	SSL_CFLAGS=""	
-	SSL_TYPE="gnutls"
 fi
 
 
@@ -432,8 +405,6 @@ AC_SUBST(CFLAGS)
 AC_SUBST(SEDOBJ)
 AC_SUBST(SSL_CFLAGS)
 AC_SUBST(SSL_LIBS)
-AC_SUBST(GNUTLS_CFLAGS)
-AC_SUBST(GNUTLS_LIBS)
 
 if test "$prefix" = "NONE"; then 
 	AC_DEFINE_UNQUOTED(RB_PREFIX, "$ac_default_prefix", [Prefix where libratbox is installed.])

@@ -31,6 +31,7 @@
 #include "numeric.h"
 #include "send.h"
 #include "match.h"
+#include "ipv4_from_ipv6.h"
 
 #ifdef RB_IPV6
 static unsigned long hash_ipv6(struct sockaddr *, int);
@@ -366,6 +367,9 @@ find_address_conf(const char *host, const char *sockhost, const char *user,
 {
 	struct ConfItem *iconf, *kconf;
 	const char *vuser;
+	#ifdef RB_IPV6
+		struct sockaddr_in ip4;
+	#endif
 
 	/* Find the best I-line... If none, return NULL -A1kmm */
 	if(!(iconf = find_conf_by_address(host, sockhost, NULL, ip, CONF_CLIENT, aftype, user, auth_user)))
@@ -420,18 +424,35 @@ find_address_conf(const char *host, const char *sockhost, const char *user,
 }
 
 /* struct ConfItem* find_dline(struct rb_sockaddr_storage*, int)
- * Input: An address, an address family.
+ * Input: An address, an address family.  Now matches teredo and
+ *        6to4 addresses.
  * Output: The best matching D-line or exempt line.
  * Side effects: None.
  */
 struct ConfItem *
 find_dline(struct sockaddr *addr, int aftype)
 {
-	struct ConfItem *eline;
-	eline = find_conf_by_address(NULL, NULL, NULL, addr, CONF_EXEMPTDLINE | 1, aftype, NULL, NULL);
-	if(eline)
-		return eline;
-	return find_conf_by_address(NULL, NULL, NULL, addr, CONF_DLINE | 1, aftype, NULL, NULL);
+	struct ConfItem *aconf;
+	#ifdef RB_IPV6
+	struct sockaddr_in addr2;
+	#endif
+	
+	aconf = find_conf_by_address(NULL, NULL, NULL, addr, CONF_EXEMPTDLINE | 1, aftype, NULL, NULL);
+	if(aconf)
+		return aconf;
+	aconf = find_conf_by_address(NULL, NULL, NULL, addr, CONF_DLINE | 1, aftype, NULL, NULL);
+	if(aconf)
+		return aconf;
+	#ifdef RB_IPV6
+		if(addr != NULL && addr->sa_family == AF_INET6 &&
+			ipv4_from_ipv6((const struct sockaddr_in6 *)(const void *)addr, &addr2))
+		{
+			aconf = find_conf_by_address(NULL, NULL, NULL, (struct sockaddr *)&addr2, CONF_DLINE | 1, AF_INET, NULL, NULL);
+			if(aconf)
+				return aconf;
+		}
+	#endif
+	return NULL;
 }
 
 /* void find_exact_conf_by_address(const char*, int, const char *)

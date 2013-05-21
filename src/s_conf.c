@@ -751,10 +751,13 @@ set_default_conf(void)
 	ConfigFileEntry.use_whois_actually = YES;
 	ConfigFileEntry.burst_away = NO;
 	ConfigFileEntry.collision_fnc = YES;
+	ConfigFileEntry.resv_fnc = YES; 
 	ConfigFileEntry.global_snotices = YES;
 	ConfigFileEntry.operspy_dont_care_user_info = NO;
 	ConfigFileEntry.use_propagated_bans = YES;
 	ConfigFileEntry.secret_channels_in_whois = NO;
+	ConfigFileEntry.max_ratelimit_tokens = 30;
+	ConfigFileEntry.away_interval = 30; 
 
 #ifdef HAVE_LIBZ
 	ConfigFileEntry.compression_level = 4;
@@ -811,7 +814,6 @@ set_default_conf(void)
 	ConfigFileEntry.min_nonwildcard_simple = 3;
 	ConfigFileEntry.default_floodcount = 8;
 	ConfigFileEntry.default_ident_timeout = 5;
-	ConfigFileEntry.client_flood = CLIENT_FLOOD_DEFAULT;
 	ConfigFileEntry.tkline_expire_notices = 0;
 
         ConfigFileEntry.reject_after_count = 5;
@@ -819,6 +821,13 @@ set_default_conf(void)
 	ConfigFileEntry.reject_duration = 120;
 	ConfigFileEntry.throttle_count = 4;
 	ConfigFileEntry.throttle_duration = 60;
+	
+	ConfigFileEntry.client_flood_max_lines = CLIENT_FLOOD_DEFAULT; 
+	ConfigFileEntry.client_flood_burst_rate = 5; 
+	ConfigFileEntry.client_flood_burst_max = 5; 
+	ConfigFileEntry.client_flood_message_time = 1;
+	ConfigFileEntry.client_flood_message_num = 2; 
+	
 	ConfigFileEntry.expire_override_time = 300;
 
 	ServerInfo.default_max_clients = MAXCONNECTIONS;
@@ -886,9 +895,9 @@ validate_conf(void)
 				
 	}
 
-	if((ConfigFileEntry.client_flood < CLIENT_FLOOD_MIN) ||
-	   (ConfigFileEntry.client_flood > CLIENT_FLOOD_MAX))
-		ConfigFileEntry.client_flood = CLIENT_FLOOD_MAX;
+	if((ConfigFileEntry.client_flood_max_lines < CLIENT_FLOOD_MIN) ||
+	   (ConfigFileEntry.client_flood_max_lines > CLIENT_FLOOD_MAX))
+		ConfigFileEntry.client_flood_max_lines = CLIENT_FLOOD_MAX;
 
 	if(!split_users || !split_servers ||
 	   (!ConfigChannel.no_create_on_split && !ConfigChannel.no_join_on_split))
