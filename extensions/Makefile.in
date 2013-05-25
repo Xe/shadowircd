@@ -54,6 +54,7 @@ SRCS =                          \
   force_user_invis.c		\
   hurt.c			\
   ip_cloaking.c			\
+  sasl_usercloak.c		\
   sno_farconnect.c		\
   sno_globalkline.c		\
   sno_globaloper.c		\
