@@ -599,13 +599,6 @@ main(int argc, char *argv[])
 	}
 
 	setup_signals();
-	
-	/* Make sure config file exists -- Quora */
-	if( access( ConfigFileEntry.configfile, F_OK|R_OK ) == -1 ) {
-		  inotice("FATAL: No config file found at %s, exiting",
-			  ConfigFileEntry.configfile);
-		  exit(-1);
-	} 
 
 	if (testing_conf)
 		server_state_foreground = 1;
